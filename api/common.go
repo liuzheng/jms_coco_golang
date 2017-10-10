@@ -5,11 +5,11 @@ import (
 )
 
 type Server struct {
-	url    string
-	appid  string
-	appkey string
+	Url    string
+	AppId  string
+	AppKey string
 }
 
-func (s *Server) Query() () {
+func Query() () {
 
 }
