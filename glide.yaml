@@ -1,0 +1,4 @@
+package: coco
+import:
+- package: golang.org/x/crypto/ssh
+- package: golang.org/x/crypto/ssh/agent
