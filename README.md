@@ -5,3 +5,4 @@
 3. ssh  ssh服务
 4. websocket ws服务
 5. utils 工具类
+6. cmd 命令集
