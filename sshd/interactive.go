@@ -18,13 +18,13 @@ func DefaultInteractive(comm io.ReadWriter, session *Session) (string, error) {
 	}
 
 	// Beware, nasty input parsing loop
-loop:
+	loop:
 	for {
 		fmt.Fprintf(comm, "Please select remote server: ")
 		var buf []byte
 		b := make([]byte, 1)
 		var (
-			n   int
+			n int
 			err error
 		)
 		for {

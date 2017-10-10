@@ -15,19 +15,19 @@ type User struct {
 	AuthKeys  string
 	// The name the user will be referred to as. *NOT* the username used when
 	// starting the session.
-	Name string
+	Name      string
 }
 
 // Session describes the current user session.
 type Session struct {
 	// Conn is the ssh.ServerConn associated with the connection.
-	Conn *ssh.ServerConn
+	Conn      *ssh.ServerConn
 
 	// User is the current user, or nil if unknown.
-	User *User
+	User      *User
 
 	// Remotes is the allowed set of remote hosts.
-	Remotes []string
+	Remotes   []string
 
 	// PublicKey is the public key used in this session.
 	PublicKey ssh.PublicKey
@@ -39,13 +39,13 @@ type Server struct {
 	// recognized.. Returning nil error indicates that the login was allowed,
 	// regardless of whether the user was recognized or not. To disallow a
 	// connection, return an error.
-	Auther func(ssh.ConnMetadata, ssh.PublicKey) (*User, error)
+	Auther      func(ssh.ConnMetadata, ssh.PublicKey) (*User, error)
 
 	// Setup takes a Session, the most important task being filling out the
 	// permitted remote hosts. Returning an error here will send the error to
 	// the user and terminate the connection. This is not as clean as denying
 	// the user in Auther, but can be used in case the denial was too dynamic.
-	Setup func(*Session) error
+	Setup       func(*Session) error
 
 	// Interactive is called to ask the user to select a host on the list of
 	// potential remote hosts. This is only called in the case wehre more than
@@ -58,8 +58,8 @@ type Server struct {
 	// purpose of this callback is logging, but returning an error will
 	// terminate the connection, allowing it to be used as a last-minute
 	// bailout.
-	Selected  func(*Session, string) error
-	sshConfig *ssh.ServerConfig
+	Selected    func(*Session, string) error
+	sshConfig   *ssh.ServerConfig
 }
 
 type publicKey struct {
