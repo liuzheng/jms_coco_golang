@@ -37,10 +37,12 @@ type Session struct {
 	User *User
 
 	// Remotes is the allowed set of remote hosts.
-	Remotes []string
+	//Remotes []string
 
 	// PublicKey is the public key used in this session.
 	PublicKey ssh.PublicKey
+
+	Machines []api.Machine
 }
 
 // Server is the sshmux server instance.
@@ -62,13 +64,13 @@ type Server struct {
 	// one option is available. If an error is returned, it is presented to the
 	// user and the connection is terminated. The io.ReadWriter is to be used
 	// for user interaction.
-	Interactive func(io.ReadWriter, *Session) (string, error)
+	Interactive func(io.ReadWriter, *Session) (api.Machine, error)
 
 	// Selected is called when a remote host has been decided upon. The main
 	// purpose of this callback is logging, but returning an error will
 	// terminate the connection, allowing it to be used as a last-minute
 	// bailout.
-	Selected  func(*Session, string) error
+	//Selected  func(*Session, string) error
 	sshConfig *ssh.ServerConfig
 }
 
@@ -229,29 +231,30 @@ func Run() {
 			username = "unknown user"
 		}
 		log.Info("sshd setup", "%s: %s authorized (username: %s)", session.Conn.RemoteAddr(), username, session.Conn.User())
-		Hosts, _ := as.GetList()
-		if Hosts == nil {
-			// TODO: need write more code
-			log.Error("sshd", "got nothing need write more code")
-		}
-		//outer:
-		for _, h := range Hosts {
-			session.Remotes = append(session.Remotes, h.Ip)
-		}
+		session.Machines, _ = as.GetList()
+		//if Hosts == nil {
+		//	// TODO: need write more code
+		//	log.Error("sshd", "got nothing need write more code")
+		//}
+		////outer:
+		//for _, h := range Hosts {
+		//	session.Remotes = append(session.Remotes, h.Ip)
+		//}
+		//session.Machines =
 		return nil
 	}
 
 	sshserver := New(hostSigner, auth, setup)
-	sshserver.Selected = func(session *Session, remote string) error {
-		var username string
-		if session.User != nil {
-			username = session.User.Name
-		} else {
-			username = "unknown user"
-		}
-		log.Debug("sshserver", "%s: %s connecting to %s", session.Conn.RemoteAddr(), username, remote)
-		return nil
-	}
+	//sshserver.Selected = func(session *Session, remote string) error {
+	//	var username string
+	//	if session.User != nil {
+	//		username = session.User.Name
+	//	} else {
+	//		username = "unknown user"
+	//	}
+	//	log.Debug("sshserver", "%s: %s connecting to %s", session.Conn.RemoteAddr(), username, remote)
+	//	return nil
+	//}
 	// Set up listener
 	l, err := net.Listen("tcp", fmt.Sprintf("%v:%v", as.Ip, as.SshPort))
 	if err != nil {
