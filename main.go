@@ -4,14 +4,12 @@ import (
 	"coco/api"
 	log "github.com/liuzheng712/golog"
 	"coco/sshd"
-	"flag"
 	"coco/util"
 	"fmt"
 )
 
 func main() {
 	log.Info("BOOT", "1-系统配置加载")
-	flag.Parse()
 	util.CheckConfig()
 	log.Info("BOOT", "2-初始化API模块")
 	as := api.New()

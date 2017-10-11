@@ -17,6 +17,7 @@ var (
 )
 
 func CheckConfig() {
+	flag.Parse()
 	if *JmsUrl == "" {
 		log.Fatal("Config", "JmsUrl 未指定，Jumpserver Core地址 -jmsurl")
 	} else {
