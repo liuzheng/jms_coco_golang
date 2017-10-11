@@ -12,6 +12,18 @@ type Server struct {
 	Action  Action
 }
 
+type UserAuth struct {
+	Username   string
+	Server     UserServer
+	Action     Action
+	UserPubKey UserPubKey
+	UserToken  UserToken
+}
+type UserServer interface {
+	Query(action string, data map[string]interface{}) ([]byte, error)
+	CreateQueryData() map[string]interface{}
+}
+
 //api操作对应URL
 type Action struct {
 	GetUserPubKey     string
