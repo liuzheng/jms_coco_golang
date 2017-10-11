@@ -6,11 +6,19 @@ import (
 	"io/ioutil"
 	"errors"
 	"encoding/json"
+	"coco/util"
 )
 
 //初始化一个ApiServer
 func New() *Server {
-	apiServer := Server{}
+	apiServer := Server{
+		Url:     *util.JmsUrl,
+		AppId:   *util.AppId,
+		AppKey:  *util.AppKey,
+		Ip:      *util.Ip,
+		WsPort:  *util.WsPort,
+		SshPort: *util.SshPort,
+	}
 	apiServer.Action = Action{
 		GetUserPubKey:     "test.php?act=getpubkey",
 		GetUserToken:      "test.php?act=getusertoken",

@@ -1,16 +1,20 @@
 package main
 
 import (
-	"./api"
-	"./util"
+	"coco/api"
 	log "github.com/liuzheng712/golog"
+	"coco/sshd"
+	"flag"
 )
 
 func main() {
+	flag.Parse()
+	log.Info("main", "阻塞启动sshd")
+	sshd.Run()
+
 	log.Logs("", "DEBUG", "DEBUG")
 	//获取配置信息
 	as := api.New()
-	util.Config(as)
 	log.Info("main", "向JMS注册自己")
 	resp, _ := as.Register()
 	log.Debug("main", "%v", resp)
