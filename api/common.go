@@ -4,12 +4,7 @@ import (
 //"github.com/pquerna/ffjson"
 )
 
-type Server struct {
-	Url    string
-	AppId  string
-	AppKey string
-}
-
+//发起HTTP请求
 func Query() () {
 
 }

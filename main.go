@@ -10,7 +10,7 @@ func main() {
 	key, _ := api.GetUserPubKey("root")
 	log.Print(key)
 	log.Print("获取用户TOKEN：test")
-	res, _ := api.GetLoginToken("root", key)
+	res, _ := api.GetLoginToken("root", key.Ticket)
 	log.Print(res)
 	log.Print("获取用户服务器列表：test")
 	mlist, _ := api.GetList()

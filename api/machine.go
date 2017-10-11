@@ -1,7 +1,5 @@
 package api
 
-import "log"
-
 //获取可用服务器列表
 func GetList() ([]Machine, error) {
 	return []Machine{
@@ -22,8 +20,7 @@ func GetList() ([]Machine, error) {
 }
 
 //获取服务器登陆凭证
-func GetLoginCredit(serverid, userid int) (LoginCredit, error) {
-	log.Print("参数", serverid, userid)
+func GetLoginCredit(serverId, userId int) (LoginCredit, error) {
 	return LoginCredit{
 		Sid:      1,
 		Username: "root",

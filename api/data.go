@@ -1,8 +1,14 @@
 package api
 
+//jms服务器配置
+type Server struct {
+	Url    string
+	AppId  string
+	AppKey string
+}
+
 //用户登陆TOKEN
 type UserToken struct {
-	Uid     int
 	Token   string
 	Expired int
 }
@@ -28,4 +34,10 @@ type Machine struct {
 type MachineUser struct {
 	Uid      int
 	Username string
+}
+
+//用户pubkey返回
+type UserPubKey struct {
+	Ticket string
+	Key    string
 }
