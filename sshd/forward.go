@@ -7,7 +7,8 @@ import (
 	"sync"
 
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/agent"
+	//"golang.org/x/crypto/ssh/agent"
+	"coco/api"
 )
 
 func proxy(reqs1, reqs2 <-chan *ssh.Request, channel1, channel2 ssh.Channel) {
@@ -73,12 +74,12 @@ func (s *Server) ChannelForward(session *Session, newChannel ssh.NewChannel) {
 	address := fmt.Sprintf("%s:%d", msg.RAddr, msg.RPort)
 
 	permitted := false
-	for _, remote := range session.Remotes {
-		if remote == address {
-			permitted = true
-			break
-		}
-	}
+	//for _, remote := range session.Machines {
+	//	if remote == address {
+	//		permitted = true
+	//		break
+	//	}
+	//}
 
 	if !permitted {
 		newChannel.Reject(ssh.Prohibited, "remote host access denied for user")
@@ -86,12 +87,12 @@ func (s *Server) ChannelForward(session *Session, newChannel ssh.NewChannel) {
 	}
 
 	// Log the selection
-	if s.Selected != nil {
-		if err := s.Selected(session, address); err != nil {
-			newChannel.Reject(ssh.Prohibited, "access denied")
-			return
-		}
-	}
+	//if s.Selected != nil {
+	//	if err := s.Selected(session, address); err != nil {
+	//		newChannel.Reject(ssh.Prohibited, "access denied")
+	//		return
+	//	}
+	//}
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -124,6 +125,10 @@ type rw struct {
 	io.Writer
 }
 
+func HostKeyCallback(hostID string, remote net.Addr, key ssh.PublicKey) error {
+	return nil
+}
+
 // SessionForward performs a regular forward, providing the user with an
 // interactive remote host selection if necessary. This forwarding type
 // requires agent forwarding in order to work.
@@ -137,14 +142,14 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	stderr := sesschan.Stderr()
 
-	remote := ""
-	switch len(session.Remotes) {
+	var remote api.Machine
+	switch len(session.Machines) {
 	case 0:
 		fmt.Fprintf(stderr, "User has no permitted remote hosts.\r\n")
 		sesschan.Close()
 		return
 	case 1:
-		remote = session.Remotes[0]
+		remote = session.Machines[0]
 	default:
 		comm := rw{Reader: sesschan, Writer: stderr}
 		if s.Interactive == nil {
@@ -159,15 +164,15 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	}
 
 	// Log the selection
-	if s.Selected != nil {
-		if err = s.Selected(session, remote); err != nil {
-			fmt.Fprintf(stderr, "Remote host selection denied.\r\n")
-			sesschan.Close()
-			return
-		}
-	}
+	//if s.Selected != nil {
+	//	if err = s.Selected(session, remote); err != nil {
+	//		fmt.Fprintf(stderr, "Remote host selection denied.\r\n")
+	//		sesschan.Close()
+	//		return
+	//	}
+	//}
 
-	fmt.Fprintf(stderr, "Connecting to %s\r\n", remote)
+	fmt.Fprintf(stderr, "Connecting to %s@%s:%d\r\n", remote.Users[0].Username, remote.Ip, remote.Port)
 
 	// Set up the agent
 
@@ -175,6 +180,7 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	if err != nil {
 		fmt.Fprintf(stderr, "sshmux requires either agent forwarding or secure channel forwarding.\r\n")
 		fmt.Fprintf(stderr, "Either enable agent forwarding (-A), or use a ssh -W proxy command.\r\n")
+		fmt.Fprintf(stderr, "For more info, see the Jumpserver's wiki.\r\n")
 		sesschan.Close()
 		return
 	}
@@ -183,16 +189,19 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	// Set up the client
 
-	ag := agent.NewClient(agentChan)
+	//ag := agent.NewClient(agentChan)
 
+	singer, _ := remote.Signer()
 	clientConfig := &ssh.ClientConfig{
-		User: session.Conn.User(),
+		User: remote.Users[0].Username,
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeysCallback(ag.Signers),
+			//ssh.PublicKeysCallback(ag.Signers),
+			ssh.PublicKeys(singer),
 		},
+		HostKeyCallback: HostKeyCallback,
 	}
 
-	client, err := ssh.Dial("tcp", remote, clientConfig)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%v:%v", remote.Ip, remote.Port), clientConfig)
 	if err != nil {
 		fmt.Fprintf(stderr, "[gabriel]Connect failed: %v\r\n", err)
 		sesschan.Close()

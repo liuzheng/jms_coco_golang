@@ -6,6 +6,16 @@ import (
 	"net"
 
 	"golang.org/x/crypto/ssh"
+	"io/ioutil"
+	log "github.com/liuzheng712/golog"
+	"flag"
+	"bytes"
+	"coco/api"
+	"fmt"
+)
+
+var (
+	Hostkey = flag.String("hostkey", "test/ssh_proxy_server_key", "hostkey default 'test/ssh_proxy_server_key'")
 )
 
 // User describes an authenticable user.
@@ -15,22 +25,24 @@ type User struct {
 	AuthKeys  string
 	// The name the user will be referred to as. *NOT* the username used when
 	// starting the session.
-	Name      string
+	Name string
 }
 
 // Session describes the current user session.
 type Session struct {
 	// Conn is the ssh.ServerConn associated with the connection.
-	Conn      *ssh.ServerConn
+	Conn *ssh.ServerConn
 
 	// User is the current user, or nil if unknown.
-	User      *User
+	User *User
 
 	// Remotes is the allowed set of remote hosts.
-	Remotes   []string
+	//Remotes []string
 
 	// PublicKey is the public key used in this session.
 	PublicKey ssh.PublicKey
+
+	Machines []api.Machine
 }
 
 // Server is the sshmux server instance.
@@ -39,27 +51,27 @@ type Server struct {
 	// recognized.. Returning nil error indicates that the login was allowed,
 	// regardless of whether the user was recognized or not. To disallow a
 	// connection, return an error.
-	Auther      func(ssh.ConnMetadata, ssh.PublicKey) (*User, error)
+	Auther func(ssh.ConnMetadata, ssh.PublicKey) (*User, error)
 
 	// Setup takes a Session, the most important task being filling out the
 	// permitted remote hosts. Returning an error here will send the error to
 	// the user and terminate the connection. This is not as clean as denying
 	// the user in Auther, but can be used in case the denial was too dynamic.
-	Setup       func(*Session) error
+	Setup func(*Session) error
 
 	// Interactive is called to ask the user to select a host on the list of
 	// potential remote hosts. This is only called in the case wehre more than
 	// one option is available. If an error is returned, it is presented to the
 	// user and the connection is terminated. The io.ReadWriter is to be used
 	// for user interaction.
-	Interactive func(io.ReadWriter, *Session) (string, error)
+	Interactive func(io.ReadWriter, *Session) (api.Machine, error)
 
 	// Selected is called when a remote host has been decided upon. The main
 	// purpose of this callback is logging, but returning an error will
 	// terminate the connection, allowing it to be used as a last-minute
 	// bailout.
-	Selected    func(*Session, string) error
-	sshConfig   *ssh.ServerConfig
+	//Selected  func(*Session, string) error
+	sshConfig *ssh.ServerConfig
 }
 
 type publicKey struct {
@@ -171,4 +183,83 @@ func New(signer ssh.Signer, auth func(ssh.ConnMetadata, ssh.PublicKey) (*User, e
 	server.sshConfig.AddHostKey(signer)
 
 	return server
+}
+
+func Run() {
+	as := api.New()
+	as.Register()
+	userauth, _ := as.Auth()
+	userkey, _ := userauth.GetUserPubKey()
+
+	hostPrivateKey, err := ioutil.ReadFile(*Hostkey)
+	if err != nil {
+		panic(err)
+	}
+
+	hostSigner, err := ssh.ParsePrivateKey(hostPrivateKey)
+	if err != nil {
+		log.Error("sshd Run", "%v", err)
+		return
+	}
+	// sshforward setup
+	auth := func(c ssh.ConnMetadata, key ssh.PublicKey) (*User, error) {
+		var candidate ssh.PublicKey
+		t := key.Type()
+		k := key.Marshal()
+
+		user := User{Name: userauth.Username}
+		authFile := []byte(userkey.Key)
+
+		candidate, _, _, _, _ = ssh.ParseAuthorizedKey(authFile)
+		if t == candidate.Type() && bytes.Compare(k, candidate.Marshal()) == 0 {
+			return &user, nil
+		}
+
+		//if hasDefaults {
+		//	return nil, nil
+		//}
+
+		//log.Warn("sshd auth", "%s: access denied (username: %s)", c.RemoteAddr(), c.User())
+		return nil, errors.New("access denied")
+	}
+
+	setup := func(session *Session) error {
+		var username string
+		if session.User != nil {
+			username = session.User.Name
+		} else {
+			username = "unknown user"
+		}
+		log.Info("sshd setup", "%s: %s authorized (username: %s)", session.Conn.RemoteAddr(), username, session.Conn.User())
+		session.Machines, _ = as.GetList()
+		//if Hosts == nil {
+		//	// TODO: need write more code
+		//	log.Error("sshd", "got nothing need write more code")
+		//}
+		////outer:
+		//for _, h := range Hosts {
+		//	session.Remotes = append(session.Remotes, h.Ip)
+		//}
+		//session.Machines =
+		return nil
+	}
+
+	sshserver := New(hostSigner, auth, setup)
+	//sshserver.Selected = func(session *Session, remote string) error {
+	//	var username string
+	//	if session.User != nil {
+	//		username = session.User.Name
+	//	} else {
+	//		username = "unknown user"
+	//	}
+	//	log.Debug("sshserver", "%s: %s connecting to %s", session.Conn.RemoteAddr(), username, remote)
+	//	return nil
+	//}
+	// Set up listener
+	l, err := net.Listen("tcp", fmt.Sprintf("%v:%v", as.Ip, as.SshPort))
+	if err != nil {
+		panic(err)
+	}
+
+	sshserver.Serve(l)
 }
