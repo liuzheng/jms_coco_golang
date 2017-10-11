@@ -17,7 +17,7 @@ func DefaultInteractive(comm io.ReadWriter, session *Session) (api.Machine, erro
 	remotes := []api.Machine{}
 	for _, v := range session.Machines {
 		for _, u := range v.Users {
-			fmt.Fprintf(comm, "    [%d] %s@%s:%d\r\n", count, u.Username, v.Ip, v.Port)
+			fmt.Fprintf(comm, "    [%d] %s@%s:%d  %s\r\n", count, u.Username, v.Ip, v.Port, v.Remark)
 			remotes = append(remotes, api.Machine{
 				Ip:     v.Ip,
 				Port:   v.Port,
