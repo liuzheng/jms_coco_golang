@@ -5,3 +5,14 @@
 3. sshd  ssh服务
 4. websocket ws服务
 5. util 工具类
+
+
+## API调试说明
+
+mock.php 为mockserver文件，直接运行
+
+> php -S 0.0.0.0:8888 
+
+即可启动，启动后，使用如下参数启动Coco
+
+> go run main.go -apiurl=http://127.0.0.1:8888 -appid=sdlfjskllu4234324

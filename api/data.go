@@ -2,9 +2,25 @@ package api
 
 //jms服务器配置
 type Server struct {
-	Url    string
-	AppId  string
-	AppKey string
+	Url     string
+	AppId   string
+	AppKey  string
+	WsPort  int
+	SshPort int
+	Ip      string
+	Token   UserToken
+	Action  Action
+}
+
+//api操作对应URL
+type Action struct {
+	GetUserPubKey     string
+	GetUserToken      string
+	GetMachineList    string
+	GetLoginCredit    string
+	CheckMonitorToken string
+	Register          string
+	ReportSession     string
 }
 
 //用户登陆TOKEN
@@ -17,7 +33,7 @@ type UserToken struct {
 type LoginCredit struct {
 	Sid        int
 	Username   string
-	PrivateKey string
+	PrivateKey string `json:"private_key"`
 }
 
 //服务器列表单项
@@ -40,4 +56,9 @@ type MachineUser struct {
 type UserPubKey struct {
 	Ticket string
 	Key    string
+}
+
+//监控权限返回
+type ResponsePass struct {
+	Pass bool
 }
