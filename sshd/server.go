@@ -8,14 +8,14 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	log "github.com/liuzheng712/golog"
-	"flag"
 	"bytes"
 	"coco/api"
+	"coco/util"
 	"fmt"
 )
 
 var (
-	Hostkey = flag.String("hostkey", "test/ssh_proxy_server_key", "hostkey default 'test/ssh_proxy_server_key'")
+	Hostkey = util.Hostkey
 )
 
 // User describes an authenticable user.
@@ -187,7 +187,6 @@ func New(signer ssh.Signer, auth func(ssh.ConnMetadata, ssh.PublicKey) (*User, e
 
 func Run() {
 	as := api.New()
-	as.Register()
 	userauth, _ := as.Auth()
 	userkey, _ := userauth.GetUserPubKey()
 

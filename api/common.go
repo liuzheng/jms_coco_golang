@@ -11,7 +11,7 @@ import (
 
 //初始化一个ApiServer
 func New() *Server {
-	apiServer := Server{
+	server := Server{
 		Url:     *util.JmsUrl,
 		AppId:   *util.AppId,
 		AppKey:  *util.AppKey,
@@ -19,7 +19,7 @@ func New() *Server {
 		WsPort:  *util.WsPort,
 		SshPort: *util.SshPort,
 	}
-	apiServer.Action = Action{
+	server.Action = Action{
 		GetUserPubKey:     "test.php?act=getpubkey",
 		GetUserToken:      "test.php?act=getusertoken",
 		CheckMonitorToken: "test.php?act=checkmonitortoken",
@@ -28,7 +28,7 @@ func New() *Server {
 		ReportSession:     "test.php?act=reportsession",
 		Register:          "test.php?act=register",
 	}
-	return &apiServer
+	return &server
 }
 
 //发起HTTP请求

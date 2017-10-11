@@ -9,11 +9,34 @@ import (
 var (
 	Ip      = flag.String("ip", GetIp(), "对外提供服务的IP地址")
 	AppId   = flag.String("appid", "", "Jumpserver Core中添加完Coco后获得的AppId")
-	JmsUrl  = flag.String("apiurl", "", "Jumpserver Core地址")
+	JmsUrl  = flag.String("jmsurl", "", "Jumpserver Core地址")
 	AppKey  = flag.String("appkey", "", "Jumpserver Core中添加完Coco后获得的AppKey")
 	WsPort  = flag.Int("wsport", 7871, "对外提供WS服务的地址")
 	SshPort = flag.Int("sshport", 7822, "对外提供SSH服务的地址")
+	Hostkey = flag.String("hostkey", "host_key", "SSH Server的私钥文件")
 )
+
+func CheckConfig() {
+	if *JmsUrl == "" {
+		log.Fatal("Config", "JmsUrl 未指定，Jumpserver Core地址 -jmsurl")
+	} else {
+		log.Info("Config", "读取配置 JmsUrl：%s", *JmsUrl)
+	}
+	if *AppId == "" {
+		log.Fatal("Config", "AppId 未指定，Jumpserver Core中添加完Coco后获得的AppId -appid")
+	} else {
+		log.Info("Config", "读取配置 AppId：%s", *AppId)
+	}
+	if *AppKey == "" {
+		log.Fatal("Config", "AppKey 未指定，Jumpserver Core中添加完Coco后获得的AppKey -appkey")
+	} else {
+		log.Info("Config", "读取配置 AppKey：%s", *AppKey)
+	}
+	log.Info("Config", "读取配置 HostKey：%s", *Hostkey)
+	log.Info("Config", "读取配置 Ip：%s", *Ip)
+	log.Info("Config", "读取配置 WsPort：%d", *WsPort)
+	log.Info("Config", "读取配置 SshPort：%d", *SshPort)
+}
 
 func GetIp() string {
 	addrs, err := net.InterfaceAddrs()
