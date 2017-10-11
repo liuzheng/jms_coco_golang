@@ -173,10 +173,8 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	agentChan, agentReqs, err := session.Conn.OpenChannel("auth-agent@openssh.com", nil)
 	if err != nil {
-		fmt.Fprintf(stderr, "\r\n====== sshmux ======\r\n")
 		fmt.Fprintf(stderr, "sshmux requires either agent forwarding or secure channel forwarding.\r\n")
 		fmt.Fprintf(stderr, "Either enable agent forwarding (-A), or use a ssh -W proxy command.\r\n")
-		fmt.Fprintf(stderr, "For more info, see the sshmux wiki.\r\n")
 		sesschan.Close()
 		return
 	}

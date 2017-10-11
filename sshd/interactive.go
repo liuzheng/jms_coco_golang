@@ -52,7 +52,6 @@ func DefaultInteractive(comm io.ReadWriter, session *Session) (string, error) {
 					fmt.Fprintf(comm, "\r\nGoodbye\r\n")
 					return "", errors.New("user terminated session")
 				}
-
 				buf = append(buf, b[0])
 			}
 		}
