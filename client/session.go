@@ -4,8 +4,10 @@ import (
 	"golang.org/x/crypto/ssh"
 	"net"
 	"coco/api"
+	"fmt"
 )
 
+//建立连接到后端服务器的Session
 func New(host api.Machine, credit api.LoginCredit) (session *ssh.Session) {
 	signer, err := ssh.ParsePrivateKey([]byte(credit.PrivateKey))
 	if err != nil {
@@ -20,7 +22,7 @@ func New(host api.Machine, credit api.LoginCredit) (session *ssh.Session) {
 			return nil
 		},
 	}
-	client, err := ssh.Dial("tcp", "112.74.170.194:9011", config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Ip, host.Port), config)
 	if err != nil {
 		panic("Failed to dial: " + err.Error())
 	}
