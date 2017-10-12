@@ -2,8 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"golang.org/x/crypto/ssh"
-	"coco/util/log"
 )
 
 // 获取可用服务器列表
@@ -24,8 +22,8 @@ func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, error) {
 	return rd, err
 }
 
-func (m *Machine) Signer() (signer ssh.Signer, err error) {
-	signer, err = ssh.ParsePrivateKey([]byte(`-----BEGIN RSA PRIVATE KEY-----
+func (m *Machine) PrivateKey() (string) {
+	return `-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAwC8ioFMB2pn7SVUMpfYyQyYiDaPqJpUDcqwdI6SZ/cF42qTv
 FQ3/K42IUswgaL6LMKtzRcHBF8yHGXN/J52W1icDwi+8LF2qT9aohOuYYBLxGLiM
 KSMrLTYqdqXfh+K6wxCG6FmOawPVaBnsQuRkih8MKsPoYnUD7ZSARI7oEEdXkEEy
@@ -51,11 +49,5 @@ uHD8ZflyGbqgkU5rjwPWz7dDM9dXPLTSOyWTy76DWHZxSPsaS5f1FoP2jRZdJoa4
 1iQ12WECgYBsP9cGMuQQKfF+cbzg4jU5avgT/uVkAlcpIiHOWfFtwlFR9yoqOynq
 6ynjWVI0qZULhkkbWlx+N0vbNptvGW9jCaEsGy859p4qCjP3cCtn7WXUYF8KDAtR
 lnwsTWISKeoSEuGNmJU1iALYS4eWD3FMgxTm3dTSMDphAxbXe5RRFw==
------END RSA PRIVATE KEY-----`))
-	if err != nil {
-		log.Error("newClient", "unable to parse private key: %v", err)
-		//client.Success = false
-		return
-	}
-	return signer, nil
+-----END RSA PRIVATE KEY-----`
 }

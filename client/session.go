@@ -6,7 +6,7 @@ import (
 )
 
 type Session struct {
-	session *ssh.Session
+	Session *ssh.Session
 	window  windowDimensionChangeMsg
 	Client  *Client
 }
@@ -20,7 +20,7 @@ type windowDimensionChangeMsg struct {
 
 func (c *Client) NewSession() (session *Session, err error) {
 	session.Client = c
-	session.session, err = c.Client.NewSession()
+	session.Session, err = c.Client.NewSession()
 	if err != nil {
 		panic("Failed to create session: " + err.Error())
 	}
@@ -34,14 +34,14 @@ func (s *Session) Resize(h, w int) error {
 		Width:   uint32(w * 8),
 		Height:  uint32(h * 8),
 	}
-	ok, err := s.session.SendRequest("window-change", true, ssh.Marshal(&s.window))
+	ok, err := s.Session.SendRequest("window-change", true, ssh.Marshal(&s.window))
 	if err == nil && !ok {
 		err = errors.New("ssh: window-change failed")
 	}
 	return err
 }
 func (s *Session) Close() {
-	s.session.Close()
+	s.Session.Close()
 	remove(s.Client.Sessions, s)
 }
 

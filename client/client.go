@@ -6,7 +6,6 @@ import (
 	"coco/api"
 	"fmt"
 	"coco/util/log"
-	"encoding/asn1"
 )
 
 type Client struct {

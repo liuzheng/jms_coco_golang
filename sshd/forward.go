@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	//"golang.org/x/crypto/ssh/agent"
 	"coco/api"
+	"coco/client"
 )
 
 func proxy(reqs1, reqs2 <-chan *ssh.Request, channel1, channel2 ssh.Channel) {
@@ -190,18 +191,13 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	// Set up the client
 
 	//ag := agent.NewClient(agentChan)
-
-	singer, _ := remote.Signer()
-	clientConfig := &ssh.ClientConfig{
-		User: remote.Users[0].Username,
-		Auth: []ssh.AuthMethod{
-			//ssh.PublicKeysCallback(ag.Signers),
-			ssh.PublicKeys(singer),
-		},
-		HostKeyCallback: HostKeyCallback,
+	credit := api.LoginCredit{
+		Sid:        remote.Sid,
+		Username:   remote.Users[0].Username,
+		PrivateKey: remote.PrivateKey(),
 	}
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%v:%v", remote.Ip, remote.Port), clientConfig)
+	connect, err := client.New(remote, credit)
 	if err != nil {
 		fmt.Fprintf(stderr, "[gabriel]Connect failed: %v\r\n", err)
 		sesschan.Close()
@@ -215,7 +211,7 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 				return
 			}
 
-			channel2, reqs2, err := client.OpenChannel(newChannel.ChannelType(), newChannel.ExtraData())
+			channel2, reqs2, err := connect.Client.OpenChannel(newChannel.ChannelType(), newChannel.ExtraData())
 			if err != nil {
 				x, ok := err.(*ssh.OpenChannelError)
 				if ok {
@@ -236,7 +232,7 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	}()
 
 	// Forward the session channel
-	channel2, reqs2, err := client.OpenChannel("session", []byte{})
+	channel2, reqs2, err := connect.Client.OpenChannel("session", []byte{})
 	if err != nil {
 		fmt.Fprintf(stderr, "Remote session setup failed: %v\r\n", err)
 		sesschan.Close()
