@@ -42,7 +42,7 @@ func New(host api.Machine, credit api.LoginCredit) (client Client, err error) {
 		},
 	}
 	client.Client, err = ssh.Dial("tcp", fmt.Sprintf("%s:%d", host.Ip, host.Port), client.Config)
-	if err != nil {
+	if log.HandleErr("client New", err) {
 		panic("Failed to dial: " + err.Error())
 	}
 

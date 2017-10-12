@@ -57,7 +57,7 @@ func (t *TTY) GetTermSize() (termWidth, termHeight int, err error) {
 //	return
 //}
 func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
-// TODO: get the machine info
+	// TODO: get the machine info
 	return
 }
 
@@ -79,10 +79,10 @@ func Run() (server *socketio.Server) {
 		var soout io.Reader
 		t := TTY{}
 		as := api.New()
-		userauth, err := as.Auth()
-		if err != nil {
-			log.Error("ServerInit", "Auth: %v", err)
-		}
+		//userauth, err := as.Auth()
+		//if err != nil {
+		//	log.Error("ServerInit", "Auth: %v", err)
+		//}
 		modes := ssh.TerminalModes{
 			ssh.ECHO:          1,
 			ssh.TTY_OP_ISPEED: 14400,
@@ -95,14 +95,15 @@ func Run() (server *socketio.Server) {
 			soin.Write([]byte(msg))
 		})
 		so.On("login", func(username string) {
-			t.Key, err = userauth.GetUserPubKey()
-			if err != nil {
-				log.Error("ServerInit", "%v", err)
-			}
-			t.UserToken, err = userauth.GetLoginToken()
-			if err != nil {
-				log.Error("ServerInit", "%v", err)
-			}
+			t.Key, err = as.GetUserPubKey(username)
+			log.HandleErr("sshd New", err)
+			//if err != nil {
+			//	log.Error("ServerInit", "%v", err)
+			//}
+			//t.UserToken, err = userauth.GetLoginToken()
+			//if err != nil {
+			//	log.Error("ServerInit", "%v", err)
+			//}
 			t.Machines, err = as.GetList()
 			if err != nil {
 				log.Error("ServerInit", "%v", err)
@@ -119,16 +120,16 @@ func Run() (server *socketio.Server) {
 				so.Emit("disconnect")
 				return
 			}
-			credit := api.LoginCredit{
-				Sid:        remote.Sid,
-				Username:   remote.Users[0].Username,
-				PrivateKey: remote.PrivateKey(),
+			credit, err := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
+			if err != nil {
+				log.Error("ServerInit", "GetLoginCredit : %v", err)
 			}
-
 			connect, err := client.New(remote, credit)
 			session, err = connect.NewSession()
-			soin, _ = session.Session.StdinPipe()
-			soout, _ = session.Session.StdoutPipe()
+			soin, err = session.Session.StdinPipe()
+			log.HandleErr("ServerInit", err)
+			soout, err = session.Session.StdoutPipe()
+			log.HandleErr("ServerInit", err)
 
 			if err := session.Session.RequestPty("xterm", 24, 80, modes); err != nil {
 				log.Error("ServerInit", "1request for pseudo terminal failed: %v", err)
@@ -234,7 +235,7 @@ func Run() (server *socketio.Server) {
 
 	})
 	server.On("error", func(so socketio.Socket, err error) {
-		log.Error("ServerInit", "%v", err)
+		log.HandleErr("ServerInit", err)
 	})
 	return server
 }

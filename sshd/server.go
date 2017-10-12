@@ -113,7 +113,8 @@ func (s *Server) HandleConn(c net.Conn) {
 	}
 
 	user, err := s.Auther(sshConn, pk)
-
+	if log.HandleErr("sshd Serve", err) {
+	}
 	session := &Session{
 		Conn:      sshConn,
 		User:      user,
@@ -144,7 +145,7 @@ func (s *Server) HandleConn(c net.Conn) {
 func (s *Server) Serve(l net.Listener) error {
 	for {
 		conn, err := l.Accept()
-		if err != nil {
+		if log.HandleErr("sshd Serve", err) {
 			return err
 		}
 
@@ -174,13 +175,12 @@ func (s *Server) auth(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permission
 func New(as *api.Server) *Server {
 
 	hostPrivateKey, err := ioutil.ReadFile(*Hostkey)
-	if err != nil {
+	if log.HandleErr("sshd Run", err) {
 		panic(err)
 	}
 
 	signer, err := ssh.ParsePrivateKey(hostPrivateKey)
-	if err != nil {
-		log.Error("sshd Run", "%v", err)
+	if log.HandleErr("sshd Run", err) {
 		panic(err)
 	}
 	// sshforward setup
@@ -190,7 +190,8 @@ func New(as *api.Server) *Server {
 		k := key.Marshal()
 		log.Debug("auth", "%v", c.User())
 		user := User{Name: c.User()}
-		PublicKey, _ := as.GetUserPubKey(c.User())
+		PublicKey, err := as.GetUserPubKey(c.User())
+		log.HandleErr("sshd New", err)
 		authFile := []byte(PublicKey.Key)
 
 		candidate, _, _, _, _ = ssh.ParseAuthorizedKey(authFile)
@@ -214,7 +215,8 @@ func New(as *api.Server) *Server {
 			username = "unknown user"
 		}
 		log.Info("sshd setup", "%s: %s authorized (username: %s)", session.Conn.RemoteAddr(), username, session.Conn.User())
-		session.Machines, _ = as.GetList()
+		session.Machines, err = as.GetList()
+		log.HandleErr("sshd Run", err)
 		//if Hosts == nil {
 		//	// TODO: need write more code
 		//	log.Error("sshd", "got nothing need write more code")
@@ -242,22 +244,13 @@ func New(as *api.Server) *Server {
 func Run() {
 	as := api.New()
 
-	sshserver := New(as)
-	//sshserver.Selected = func(session *Session, remote string) error {
-	//	var username string
-	//	if session.User != nil {
-	//		username = session.User.Name
-	//	} else {
-	//		username = "unknown user"
-	//	}
-	//	log.Debug("sshserver", "%s: %s connecting to %s", session.Conn.RemoteAddr(), username, remote)
-	//	return nil
-	//}
+	server := New(as)
+
 	// Set up listener
 	l, err := net.Listen("tcp", fmt.Sprintf("%v:%v", as.Ip, as.SshPort))
 	if err != nil {
 		panic(err)
 	}
 
-	sshserver.Serve(l)
+	server.Serve(l)
 }

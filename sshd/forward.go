@@ -147,7 +147,7 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	var remote api.Machine
 	switch len(session.Machines) {
 	case 0:
-		fmt.Fprintf(stderr, "User has no permitted remote hosts.\r\n")
+		fmt.Fprintln(stderr, "User has no permitted remote hosts.")
 		sesschan.Close()
 		return
 	case 1:
@@ -200,7 +200,7 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	log.Debug("SessionForward", "%v", credit.PrivateKey)
 	connect, err := client.New(remote, credit)
 	if err != nil {
-		fmt.Fprintf(stderr, "[gabriel]Connect failed: %v\r\n", err)
+		fmt.Fprintf(stderr, "Connect failed: %v\r\n", err)
 		sesschan.Close()
 		return
 	}

@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 	"coco/api"
+	"coco/util/log"
 )
 
 // DefaultInteractive is the default server selection prompt for users during
@@ -33,7 +34,7 @@ func DefaultInteractive(comm io.ReadWriter, session *Session) (api.Machine, erro
 	// Beware, nasty input parsing loop
 loop:
 	for {
-		fmt.Fprintf(comm, "Please select remote server: ")
+		fmt.Fprint(comm, "Please select remote server: ")
 		var buf []byte
 		b := make([]byte, 1)
 		var (
@@ -41,7 +42,7 @@ loop:
 			err error
 		)
 		for {
-			if err != nil {
+			if log.HandleErr("DefaultInteractive", err) {
 				return api.Machine{}, err
 			}
 			n, err = comm.Read(b)
@@ -49,20 +50,19 @@ loop:
 				fmt.Fprintf(comm, "%s", b)
 				switch b[0] {
 				case '\r':
-					fmt.Fprintf(comm, "\r\n")
+					fmt.Fprintln(comm, "")
 					res, err := strconv.ParseInt(string(buf), 10, 64)
-					if err != nil {
-						fmt.Fprintf(comm, "input not a valid integer. Please try again\r\n")
+					if log.HandleErr("DefaultInteractive", err) {
+						fmt.Fprintln(comm, "input not a valid integer. Please try again")
 						continue loop
 					}
 					if int(res) >= count || res < 0 {
-						fmt.Fprintf(comm, "No such server. Please try again\r\n")
+						fmt.Fprintln(comm, "No such server. Please try again")
 						continue loop
 					}
-
 					return remotes[int(res)], nil
 				case 0x03:
-					fmt.Fprintf(comm, "\r\nGoodbye\r\n")
+					fmt.Fprintln(comm, "\r\nGoodbye")
 					return api.Machine{}, errors.New("user terminated session")
 				}
 				buf = append(buf, b[0])
