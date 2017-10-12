@@ -57,7 +57,7 @@ func (t *TTY) GetTermSize() (termWidth, termHeight int, err error) {
 //	return
 //}
 func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
-
+// TODO: get the machine info
 	return
 }
 
@@ -112,14 +112,20 @@ func Run() (server *socketio.Server) {
 		so.On("machine", func(machineID string) {
 			log.Debug("ServerInit", "try to login into %v", machineID)
 
-			machine, err := t.GetMachine(machineID)
+			remote, err := t.GetMachine(machineID)
 			if err != nil {
 				log.Error("ServerInit", "%v", err)
 				so.Emit("data", err.Error())
 				so.Emit("disconnect")
 				return
 			}
-			connect, err := client.New(machine, credit)
+			credit := api.LoginCredit{
+				Sid:        remote.Sid,
+				Username:   remote.Users[0].Username,
+				PrivateKey: remote.PrivateKey(),
+			}
+
+			connect, err := client.New(remote, credit)
 			session, err = connect.NewSession()
 			soin, _ = session.Session.StdinPipe()
 			soout, _ = session.Session.StdoutPipe()
