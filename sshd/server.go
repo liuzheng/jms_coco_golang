@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
-	log "github.com/liuzheng712/golog"
+	"coco/util/log"
 	"bytes"
 	"coco/api"
 	"coco/util"

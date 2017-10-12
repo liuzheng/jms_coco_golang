@@ -176,16 +176,16 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	// Set up the agent
 
-	agentChan, agentReqs, err := session.Conn.OpenChannel("auth-agent@openssh.com", nil)
-	if err != nil {
-		fmt.Fprintf(stderr, "sshmux requires either agent forwarding or secure channel forwarding.\r\n")
-		fmt.Fprintf(stderr, "Either enable agent forwarding (-A), or use a ssh -W proxy command.\r\n")
-		fmt.Fprintf(stderr, "For more info, see the Jumpserver's wiki.\r\n")
-		sesschan.Close()
-		return
-	}
-	defer agentChan.Close()
-	go ssh.DiscardRequests(agentReqs)
+	//agentChan, agentReqs, err := session.Conn.OpenChannel("auth-agent@openssh.com", nil)
+	//if err != nil {
+	//	fmt.Fprintf(stderr, "sshmux requires either agent forwarding or secure channel forwarding.\r\n")
+	//	fmt.Fprintf(stderr, "Either enable agent forwarding (-A), or use a ssh -W proxy command.\r\n")
+	//	fmt.Fprintf(stderr, "For more info, see the Jumpserver's wiki.\r\n")
+	//	sesschan.Close()
+	//	return
+	//}
+	//defer agentChan.Close()
+	//go ssh.DiscardRequests(agentReqs)
 
 	// Set up the client
 
