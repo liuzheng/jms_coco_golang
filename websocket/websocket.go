@@ -108,7 +108,7 @@ func Run() (server *socketio.Server) {
 			if err != nil {
 				log.Error("ServerInit", "%v", err)
 			}
-
+			// TODO: so.Emit the machine list
 		})
 		so.On("machine", func(machineID string) {
 			log.Debug("ServerInit", "try to login into %v", machineID)
