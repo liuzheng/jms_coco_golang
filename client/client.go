@@ -6,6 +6,7 @@ import (
 	"coco/api"
 	"fmt"
 	"coco/util/log"
+	"encoding/asn1"
 )
 
 type Client struct {
@@ -14,7 +15,8 @@ type Client struct {
 	Signer ssh.Signer
 	Config *ssh.ClientConfig
 
-	Client  *ssh.Client
+	Client   *ssh.Client
+	Sessions []*Session
 
 	SSHForward string // TODO: ssh forward internal
 	Proxy      string // TODO: ssh use proxy
@@ -49,5 +51,8 @@ func New(host api.Machine, credit api.LoginCredit) (client Client, err error) {
 
 // 关闭
 func (c *Client) Close() {
+	for _, session := range c.Sessions {
+		session.Close()
+	}
 	c.Client.Close()
 }

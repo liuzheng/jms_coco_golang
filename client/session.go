@@ -7,7 +7,7 @@ import (
 
 type Session struct {
 	session *ssh.Session
-	window windowDimensionChangeMsg
+	window  windowDimensionChangeMsg
 }
 
 type windowDimensionChangeMsg struct {
@@ -22,6 +22,7 @@ func (c *Client) NewSession() (session *Session, err error) {
 	if err != nil {
 		panic("Failed to create session: " + err.Error())
 	}
+	c.Sessions = append(c.Sessions, session)
 	return
 }
 func (s *Session) Resize(h, w int) error {
