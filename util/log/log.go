@@ -4,10 +4,6 @@ import (
 	"github.com/liuzheng712/golog"
 )
 
-func init() {
-	golog.Initial()
-}
-
 func Initial() {
 	golog.Initial()
 }

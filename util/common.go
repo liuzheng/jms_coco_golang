@@ -5,7 +5,7 @@ import (
 	"coco/util/log"
 )
 
-func Init() {
+func Initial() {
 	flag.Parse()
 	log.Initial()
 }

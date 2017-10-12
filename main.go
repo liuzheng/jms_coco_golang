@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	util.Init()
+	util.Initial()
 	log.Info("BOOT", "1-系统配置加载")
 	util.CheckConfig()
 	log.Info("BOOT", "2-初始化API模块")
