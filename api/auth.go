@@ -29,7 +29,7 @@ func (s *Server) GetLoginToken(username, ticket string) (UserToken, error) {
 func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, error) {
 	data := s.CreateQueryData()
 	data["session_id"] = sessionId
-	res, _ := u.Query(s.Action.CheckMonitorToken, data)
+	res, _ := s.Query(s.Action.CheckMonitorToken, data)
 	var rd ResponsePass
 	err := json.Unmarshal(res, &rd)
 	return rd, err

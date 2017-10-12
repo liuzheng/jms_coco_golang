@@ -66,7 +66,7 @@ switch ($_GET['act']) {
             'sid' => 1,
             'username' => 'root',
             'private_key' => <<<EOF
-			-----BEGIN RSA PRIVATE KEY-----
+-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAwC8ioFMB2pn7SVUMpfYyQyYiDaPqJpUDcqwdI6SZ/cF42qTv
 FQ3/K42IUswgaL6LMKtzRcHBF8yHGXN/J52W1icDwi+8LF2qT9aohOuYYBLxGLiM
 KSMrLTYqdqXfh+K6wxCG6FmOawPVaBnsQuRkih8MKsPoYnUD7ZSARI7oEEdXkEEy

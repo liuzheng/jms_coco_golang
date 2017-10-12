@@ -27,6 +27,7 @@ func New(host api.Machine, credit api.LoginCredit) (client Client, err error) {
 		Host:   host,
 		Credit: credit,
 	}
+	log.Debug("client", "New credit.PrivateKey : %v", credit.PrivateKey)
 	client.Signer, err = ssh.ParsePrivateKey([]byte(credit.PrivateKey))
 	if err != nil {
 		log.Error("client", "unable to parse private key: %v", err)

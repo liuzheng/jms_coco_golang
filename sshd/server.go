@@ -171,43 +171,27 @@ func (s *Server) auth(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permission
 }
 
 // New returns a Server initialized with the provided signer and callbacks.
-func New(signer ssh.Signer, auth func(ssh.ConnMetadata, ssh.PublicKey) (*User, error), setup func(*Session) error) *Server {
-	server := &Server{
-		Auther: auth,
-		Setup:  setup,
-	}
-
-	server.sshConfig = &ssh.ServerConfig{
-		PublicKeyCallback: server.auth,
-	}
-	server.sshConfig.AddHostKey(signer)
-
-	return server
-}
-
-func Run() {
-	as := api.New()
-	userauth, _ := as.Auth()
-	userkey, _ := userauth.GetUserPubKey()
+func New(as *api.Server) *Server {
 
 	hostPrivateKey, err := ioutil.ReadFile(*Hostkey)
 	if err != nil {
 		panic(err)
 	}
 
-	hostSigner, err := ssh.ParsePrivateKey(hostPrivateKey)
+	signer, err := ssh.ParsePrivateKey(hostPrivateKey)
 	if err != nil {
 		log.Error("sshd Run", "%v", err)
-		return
+		panic(err)
 	}
 	// sshforward setup
 	auth := func(c ssh.ConnMetadata, key ssh.PublicKey) (*User, error) {
 		var candidate ssh.PublicKey
 		t := key.Type()
 		k := key.Marshal()
-
-		user := User{Name: userauth.Username}
-		authFile := []byte(userkey.Key)
+		log.Debug("auth", "%v", c.User())
+		user := User{Name: c.User()}
+		PublicKey, _ := as.GetUserPubKey(c.User())
+		authFile := []byte(PublicKey.Key)
 
 		candidate, _, _, _, _ = ssh.ParseAuthorizedKey(authFile)
 		if t == candidate.Type() && bytes.Compare(k, candidate.Marshal()) == 0 {
@@ -242,8 +226,23 @@ func Run() {
 		//session.Machines =
 		return nil
 	}
+	server := &Server{
+		Auther: auth,
+		Setup:  setup,
+	}
 
-	sshserver := New(hostSigner, auth, setup)
+	server.sshConfig = &ssh.ServerConfig{
+		PublicKeyCallback: server.auth,
+	}
+	server.sshConfig.AddHostKey(signer)
+
+	return server
+}
+
+func Run() {
+	as := api.New()
+
+	sshserver := New(as)
 	//sshserver.Selected = func(session *Session, remote string) error {
 	//	var username string
 	//	if session.User != nil {

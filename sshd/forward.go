@@ -10,6 +10,7 @@ import (
 	//"golang.org/x/crypto/ssh/agent"
 	"coco/api"
 	"coco/client"
+	"coco/util/log"
 )
 
 func proxy(reqs1, reqs2 <-chan *ssh.Request, channel1, channel2 ssh.Channel) {
@@ -191,12 +192,12 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	// Set up the client
 
 	//ag := agent.NewClient(agentChan)
-	credit := api.LoginCredit{
-		Sid:        remote.Sid,
-		Username:   remote.Users[0].Username,
-		PrivateKey: remote.PrivateKey(),
+	as := api.New()
+	credit, err := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
+	if err != nil {
+		log.Error("SessionForward", "GetLoginCredit : %v", err)
 	}
-
+	log.Debug("SessionForward", "%v", credit.PrivateKey)
 	connect, err := client.New(remote, credit)
 	if err != nil {
 		fmt.Fprintf(stderr, "[gabriel]Connect failed: %v\r\n", err)
