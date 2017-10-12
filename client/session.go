@@ -8,6 +8,7 @@ import (
 type Session struct {
 	session *ssh.Session
 	window  windowDimensionChangeMsg
+	Client  *Client
 }
 
 type windowDimensionChangeMsg struct {
@@ -18,6 +19,7 @@ type windowDimensionChangeMsg struct {
 }
 
 func (c *Client) NewSession() (session *Session, err error) {
+	session.Client = c
 	session.session, err = c.Client.NewSession()
 	if err != nil {
 		panic("Failed to create session: " + err.Error())
@@ -40,4 +42,14 @@ func (s *Session) Resize(h, w int) error {
 }
 func (s *Session) Close() {
 	s.session.Close()
+	remove(s.Client.Sessions, s)
+}
+
+func remove(s []*Session, r *Session) []*Session {
+	for i, v := range s {
+		if v == r {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
 }
