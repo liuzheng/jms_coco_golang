@@ -68,8 +68,7 @@ func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
 //	return
 //}
 
-func New() (server *socketio.Server) {
-
+func New(as *api.Server) (server *socketio.Server) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		log.Fatal("ServerInit", "%v", err)
@@ -80,11 +79,7 @@ func New() (server *socketio.Server) {
 		var soin io.WriteCloser
 		var soout io.Reader
 		t := TTY{}
-		as := api.New()
-		//userauth, err := as.Auth()
-		//if err != nil {
-		//	log.Error("ServerInit", "Auth: %v", err)
-		//}
+
 		modes := ssh.TerminalModes{
 			ssh.ECHO:          1,
 			ssh.TTY_OP_ISPEED: 14400,
@@ -243,8 +238,8 @@ func New() (server *socketio.Server) {
 }
 
 func Run() {
-	server := New()
 	as := api.New()
+	server := New(as)
 	http.Handle("/socket.io/", server)
 	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", as.Ip, as.WsPort), nil))
 }
