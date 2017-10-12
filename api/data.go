@@ -12,21 +12,6 @@ type Server struct {
 	Action  Action
 }
 
-// 用户权限认证配置
-type UserAuth struct {
-	Username   string
-	server     UserServer
-	Action     Action
-	UserPubKey UserPubKey
-	UserToken  UserToken
-}
-
-// Server 方法复用
-type UserServer interface {
-	Query(action string, data map[string]interface{}) ([]byte, error)
-	CreateQueryData() map[string]interface{}
-}
-
 // api操作对应URL
 type Action struct {
 	GetUserPubKey     string
@@ -46,7 +31,8 @@ type UserToken struct {
 
 // 服务器登陆凭证
 type LoginCredit struct {
-	Sid        int
+	Ip         string
+	Port       int
 	Username   string
 	PrivateKey string `json:"private_key"`
 }
