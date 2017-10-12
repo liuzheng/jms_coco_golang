@@ -20,13 +20,13 @@ func New() *Server {
 		SshPort: *util.SshPort,
 	}
 	server.Action = Action{
-		GetUserPubKey:     "test.php?act=getpubkey",
-		GetUserToken:      "test.php?act=getusertoken",
-		CheckMonitorToken: "test.php?act=checkmonitortoken",
-		GetMachineList:    "test.php?act=machines",
-		GetLoginCredit:    "test.php?act=getcredit",
-		ReportSession:     "test.php?act=reportsession",
-		Register:          "test.php?act=register",
+		GetUserPubKey:     "mock.php?act=getpubkey",
+		GetUserToken:      "mock.php?act=getusertoken",
+		CheckMonitorToken: "mock.php?act=checkmonitortoken",
+		GetMachineList:    "mock.php?act=machines",
+		GetLoginCredit:    "mock.php?act=getcredit",
+		ReportSession:     "mock.php?act=reportsession",
+		Register:          "mock.php?act=register",
 	}
 	return &server
 }
