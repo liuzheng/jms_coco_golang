@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"golang.org/x/crypto/ssh"
-	log "github.com/liuzheng712/golog"
+	"coco/util/log"
 )
 
 // 获取可用服务器列表

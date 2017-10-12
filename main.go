@@ -2,7 +2,7 @@ package main
 
 import (
 	"coco/api"
-	log "github.com/liuzheng712/golog"
+	"coco/util/log"
 	"coco/sshd"
 	"coco/util"
 	"fmt"
