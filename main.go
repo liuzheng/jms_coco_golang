@@ -4,6 +4,7 @@ import (
 	"coco/api"
 	"coco/util/log"
 	"coco/sshd"
+	"coco/websocket"
 	"coco/util"
 	"fmt"
 )
@@ -19,6 +20,7 @@ func main() {
 	log.Info("BOOT", "4-启动SSH服务器")
 	go sshd.Run()
 	log.Info("BOOT", "5-启动WebSocket服务器")
+	go websocket.Run()
 	log.Info("BOOT", "6-系统启动完成")
 	for {
 		fmt.Scanln()

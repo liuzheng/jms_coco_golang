@@ -14,6 +14,8 @@ import (
 	"coco/api"
 	"coco/client"
 	"coco/util/log"
+	"net/http"
+	"fmt"
 )
 
 type TTY struct {
@@ -66,7 +68,7 @@ func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
 //	return
 //}
 
-func Run() (server *socketio.Server) {
+func New() (server *socketio.Server) {
 
 	server, err := socketio.NewServer(nil)
 	if err != nil {
@@ -238,4 +240,11 @@ func Run() (server *socketio.Server) {
 		log.HandleErr("ServerInit", err)
 	})
 	return server
+}
+
+func Run() {
+	server := New()
+	as := api.New()
+	http.Handle("/socket.io/", server)
+	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", as.Ip, as.WsPort), nil))
 }
