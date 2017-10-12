@@ -15,7 +15,6 @@ type Client struct {
 	Config *ssh.ClientConfig
 
 	Client  *ssh.Client
-	Session *ssh.Session
 
 	SSHForward string // TODO: ssh forward internal
 	Proxy      string // TODO: ssh use proxy
@@ -45,17 +44,10 @@ func New(host api.Machine, credit api.LoginCredit) (client Client, err error) {
 		panic("Failed to dial: " + err.Error())
 	}
 
-	// Each ClientConn can support multiple interactive sessions,
-	// represented by a Session.
-	client.Session, err = client.Client.NewSession()
-	if err != nil {
-		panic("Failed to create session: " + err.Error())
-	}
 	return
 }
 
 // 关闭
 func (c *Client) Close() {
-	c.Session.Close()
 	c.Client.Close()
 }
