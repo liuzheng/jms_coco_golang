@@ -63,7 +63,8 @@ switch ($_GET['act']) {
         break;
     case 'getcredit':
         echo json_encode([
-            'sid' => 1,
+            'ip' => "112.74.170.194",
+            'port' => 9011,
             'username' => 'root',
             'private_key' => <<<EOF
 -----BEGIN RSA PRIVATE KEY-----
