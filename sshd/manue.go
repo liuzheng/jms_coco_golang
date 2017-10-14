@@ -8,6 +8,7 @@ import (
 type Manue struct {
 	Conn    rw
 	Session *Session
+	API     *api.Server
 }
 
 var (
@@ -25,8 +26,8 @@ var (
 	}
 )
 
-func NewManue(conn rw, session *Session) (manue Manue, err error) {
-	manue = Manue{Conn:conn, Session:session}
+func NewManue(conn rw, session *Session, s *api.Server) (manue Manue, err error) {
+	manue = Manue{Conn:conn, Session:session, API:s}
 	return
 }
 
@@ -35,7 +36,7 @@ func (m *Manue)Welcome() {
 		fmt.Fprintf(m.Conn, "    %d) %s\r\n", k, v)
 	}
 }
-func (m *Manue)MachineList() {
+func (m *Manue)GetMachineList() {
 	count := 0
 	remotes := []api.Machine{}
 	for _, v := range m.Session.Machines {
@@ -52,5 +53,17 @@ func (m *Manue)MachineList() {
 			count++
 		}
 	}
+
+}
+func (m *Manue)GetHostGroup() {
+
+}
+func (m *Manue)GetHelp() {
+
+}
+func (m *Manue)GetHostGroupList(id string) {
+
+}
+func (m *Manue)Search(q string) {
 
 }

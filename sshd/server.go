@@ -73,6 +73,7 @@ type Server struct {
 	// bailout.
 	//Selected  func(*Session, string) error
 	sshConfig   *ssh.ServerConfig
+	API         *api.Server
 }
 
 type publicKey struct {
@@ -138,7 +139,7 @@ func (s *Server) HandleConn(c net.Conn) {
 			log.Panic("session", "%v", err)
 		}
 		conn := rw{Reader: sesschan, Writer: sesschan.Stderr()}
-		menu, err := NewManue(conn, session)
+		menu, err := NewManue(conn, session, s.API)
 		if err != nil {
 			log.Error("Session", "%v", err)
 			session.Close()
@@ -167,8 +168,10 @@ func (s *Server) HandleConn(c net.Conn) {
 							fmt.Fprint(conn, "\r\n")
 							switch strings.ToUpper(string(buf[0])) {
 							case "P":
-							// 输入 P/p 显示您有权限的主机.
+								// 输入 P/p 显示您有权限的主机.
+								menu.GetMachineList()
 							case "G":
+								menu.GetHostGroup()
 							// 输入 G/g 显示您有权限的主机组.
 							//case "E":
 							////  输入 E/e 批量执行命令.(未完成)
@@ -177,7 +180,8 @@ func (s *Server) HandleConn(c net.Conn) {
 							//case "D":
 							////  输入 D/d 批量下载文件.(未完成)
 							case "H":
-							//  输入 H/h 帮助.
+								//  输入 H/h 帮助.
+								menu.GetHelp()
 							case "Q":
 								//  输入 Q/q 退出.
 								fmt.Fprint(conn, "Goodbye\r\n")
@@ -189,11 +193,12 @@ func (s *Server) HandleConn(c net.Conn) {
 							fmt.Fprint(conn, "\r\n")
 							switch strings.ToUpper(string(buf[0])) {
 							case "/":
-							// 输入 / + IP, 主机名 or 备注 搜索. 如: /ip
+								// 输入 / + IP, 主机名 or 备注 搜索. 如: /ip
+								menu.Search(string(buf[1:]))
 							case "G":
-							//  输入 G/g + 组ID 显示该组下主机. 如: g1
+								//  输入 G/g + 组ID 显示该组下主机. 如: g1
+								menu.GetHostGroupList(string(buf[1:]))
 							default:
-
 							// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
 
 							}
@@ -274,7 +279,8 @@ func (s *Server) auth(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permission
 }
 
 // New returns a Server initialized with the provided signer and callbacks.
-func New(as *api.Server) *Server {
+func New() *Server {
+	as := api.New()
 
 	hostPrivateKey, err := ioutil.ReadFile(*Hostkey)
 	if log.HandleErr("sshd Run", err) {
@@ -333,6 +339,7 @@ func New(as *api.Server) *Server {
 	server := &Server{
 		Auther: auth,
 		Setup:  setup,
+		API:as,
 	}
 
 	server.sshConfig = &ssh.ServerConfig{
@@ -344,12 +351,11 @@ func New(as *api.Server) *Server {
 }
 
 func Run() {
-	as := api.New()
 
-	server := New(as)
+	server := New()
 
 	// Set up listener
-	l, err := net.Listen("tcp", fmt.Sprintf("%v:%v", as.Ip, as.SshPort))
+	l, err := net.Listen("tcp", fmt.Sprintf("%v:%v", *util.Ip, *util.SshPort))
 	if err != nil {
 		panic(err)
 	}
