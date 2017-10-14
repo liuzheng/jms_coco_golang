@@ -30,7 +30,7 @@ func CheckConfig() {
 	if *AppKey == "" {
 		log.Fatal("Config", "AppKey 未指定，Jumpserver Core中添加完Coco后获得的AppKey -appkey")
 	} else {
-		log.Info("Config", "读取配置 AppKey：%s", *AppKey)
+		log.Info("Config", "读取配置 AppKey：%s", log.Password(*AppKey))
 	}
 	log.Info("Config", "读取配置 HostKey：%s", *Hostkey)
 	log.Info("Config", "读取配置 Ip：%s", *Ip)

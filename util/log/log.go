@@ -2,10 +2,17 @@ package log
 
 import (
 	"github.com/liuzheng712/golog"
+	"strings"
 )
 
 func Initial() {
 	golog.Initial()
+}
+
+type Password string
+
+func (p Password) Redacted() interface{} {
+	return strings.Repeat("*", len(p))
 }
 
 var Debug = golog.Debug
