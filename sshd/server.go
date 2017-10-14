@@ -12,6 +12,7 @@ import (
 	"coco/api"
 	"coco/util"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -162,12 +163,39 @@ func (s *Server) HandleConn(c net.Conn) {
 				if n >= 0 {
 					switch b[0] {
 					case '\r':
-						if len(buf) > 0 {
+						if len(buf) == 1 {
 							fmt.Fprint(conn, "\r\n")
-							switch string(buf) {
+							switch strings.ToUpper(string(buf[0])) {
+							case "P":
+							// 输入 P/p 显示您有权限的主机.
+							case "G":
+							// 输入 G/g 显示您有权限的主机组.
+							//case "E":
+							////  输入 E/e 批量执行命令.(未完成)
+							//case "U":
+							////  输入 U/u 批量上传文件.(未完成)
+							//case "D":
+							////  输入 D/d 批量下载文件.(未完成)
+							case "H":
+							//  输入 H/h 帮助.
+							case "Q":
+								//  输入 Q/q 退出.
+								fmt.Fprint(conn, "Goodbye\r\n")
+								break loop
 							default:
-								fmt.Fprint(conn, "Error Input")
-								continue loop
+								fmt.Fprint(conn, "TO BE CONTINUED")
+							}
+						} else if len(buf) > 1 {
+							fmt.Fprint(conn, "\r\n")
+							switch strings.ToUpper(string(buf[0])) {
+							case "/":
+							// 输入 / + IP, 主机名 or 备注 搜索. 如: /ip
+							case "G":
+							//  输入 G/g + 组ID 显示该组下主机. 如: g1
+							default:
+
+							// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
+
 							}
 						}
 						continue loop
