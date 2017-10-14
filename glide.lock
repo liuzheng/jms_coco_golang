@@ -1,12 +1,32 @@
-hash: 670882990ced50eff23e71861f3c1405c74c6663e1351e110a2d025aad126cad
-updated: 2017-10-11T05:29:44.256600279+08:00
+hash: b839dca6a0712c085961479b41945bd22064dfb5da0b0c6d303dda7f000811bf
+updated: 2017-10-14T17:20:34.458351642+08:00
 imports:
+- name: github.com/googollee/go-engine.io
+  version: 80ae0e43aca17b4c5a6834999d0f2eaa16b9afda
+  subpackages:
+  - message
+  - parser
+  - polling
+  - transport
+  - websocket
+- name: github.com/googollee/go-socket.io
+  version: 5447e71f36d394766bf855d5714a487596809f0d
+- name: github.com/gorilla/websocket
+  version: 71fa72d4842364bc5f74185f4161e0099ea3624a
+- name: github.com/liuzheng712/golog
+  version: e3a6ba0392cdc06ffd1cd86f0d8eebe6465a2a59
+- name: github.com/op/go-logging
+  version: 970db520ece77730c7e4724c61121037378659d9
 - name: golang.org/x/crypto
   version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
   subpackages:
-  - ssh
-  - ssh/agent
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
-devImports: []
+  - ssh
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 686000749eaec0b8855b8eef5336cf63899fe51d
+  subpackages:
+  - unix
+testImports: []

@@ -6,13 +6,9 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"github.com/googollee/go-socket.io"
 	"io"
-	//"strings"
-	//"fmt"
-	//"crypto/md5"
-	//"strconv"
-	//"time"
 	"coco/api"
 	"coco/client"
+	"coco/util"
 	"coco/util/log"
 	"net/http"
 	"fmt"
@@ -68,13 +64,15 @@ func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
 //	return
 //}
 
-func New(as *api.Server) (server *socketio.Server) {
+func New() (server *socketio.Server) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		log.Fatal("ServerInit", "%v", err)
 	}
 	server.On("connection", func(so socketio.Socket) {
 		log.Info("ServerInit", "on connection")
+
+		as := api.New()
 		var session *client.Session
 		var soin io.WriteCloser
 		var soout io.Reader
@@ -238,8 +236,7 @@ func New(as *api.Server) (server *socketio.Server) {
 }
 
 func Run() {
-	as := api.New()
-	server := New(as)
+	server := New()
 	http.Handle("/socket.io/", server)
-	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", as.Ip, as.WsPort), nil))
+	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", *util.Ip, *util.WsPort), nil))
 }

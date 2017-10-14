@@ -1,4 +1,8 @@
 package: coco
 import:
-- package: golang.org/x/crypto/ssh
-- package: golang.org/x/crypto/ssh/agent
+- package: github.com/googollee/go-socket.io
+- package: github.com/liuzheng712/golog
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
+  - ssh/terminal
