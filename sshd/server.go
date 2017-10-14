@@ -12,6 +12,7 @@ import (
 	"coco/api"
 	"coco/util"
 	"fmt"
+	"strconv"
 )
 
 var (
@@ -25,16 +26,16 @@ type User struct {
 	AuthKeys  string
 	// The name the user will be referred to as. *NOT* the username used when
 	// starting the session.
-	Name string
+	Name      string
 }
 
 // Session describes the current user session.
 type Session struct {
 	// Conn is the ssh.ServerConn associated with the connection.
-	Conn *ssh.ServerConn
+	Conn      *ssh.ServerConn
 
 	// User is the current user, or nil if unknown.
-	User *User
+	User      *User
 
 	// Remotes is the allowed set of remote hosts.
 	//Remotes []string
@@ -42,7 +43,7 @@ type Session struct {
 	// PublicKey is the public key used in this session.
 	PublicKey ssh.PublicKey
 
-	Machines []api.Machine
+	Machines  []api.Machine
 }
 
 // Server is the sshmux server instance.
@@ -51,13 +52,13 @@ type Server struct {
 	// recognized.. Returning nil error indicates that the login was allowed,
 	// regardless of whether the user was recognized or not. To disallow a
 	// connection, return an error.
-	Auther func(ssh.ConnMetadata, ssh.PublicKey) (*User, error)
+	Auther      func(ssh.ConnMetadata, ssh.PublicKey) (*User, error)
 
 	// Setup takes a Session, the most important task being filling out the
 	// permitted remote hosts. Returning an error here will send the error to
 	// the user and terminate the connection. This is not as clean as denying
 	// the user in Auther, but can be used in case the denial was too dynamic.
-	Setup func(*Session) error
+	Setup       func(*Session) error
 
 	// Interactive is called to ask the user to select a host on the list of
 	// potential remote hosts. This is only called in the case wehre more than
@@ -71,7 +72,7 @@ type Server struct {
 	// terminate the connection, allowing it to be used as a last-minute
 	// bailout.
 	//Selected  func(*Session, string) error
-	sshConfig *ssh.ServerConfig
+	sshConfig   *ssh.ServerConfig
 }
 
 type publicKey struct {
@@ -132,7 +133,57 @@ func (s *Server) HandleConn(c net.Conn) {
 
 	switch newChannel.ChannelType() {
 	case "session":
-		s.SessionForward(session, newChannel, chans)
+		sesschan, _, err := newChannel.Accept()
+		if err != nil {
+			log.Panic("session", "%v", err)
+		}
+		conn := rw{Reader: sesschan, Writer: sesschan.Stderr()}
+		menu, _ := NewManue(conn, session)
+		menu.Welcome()
+		loop:
+		for {
+			fmt.Fprint(conn, "\r\nOpt>")
+			var buf []byte
+			b := make([]byte, 1)
+			var (
+				n int
+			)
+			for {
+				n, err = conn.Read(b)
+				if n >= 0 {
+					fmt.Fprintf(conn, "%s", b)
+					switch b[0] {
+					case '\r':
+						fmt.Fprintln(conn, "")
+						res, err := strconv.ParseInt(string(buf), 10, 64)
+						if log.HandleErr("DefaultInteractive", err) {
+							fmt.Fprint(conn, "input not a valid integer. Please try again")
+							continue loop
+						}
+						if int(res) >= 2 || res < 0 {
+							fmt.Fprint(conn, "No such server. Please try again")
+							continue loop
+						}
+					//return remotes[int(res)], nil
+					case 0x03:
+						fmt.Fprint(conn, "^C")
+						continue loop
+					case 0x04:
+						fmt.Fprint(conn, "^D")
+						fmt.Fprint(conn, "\r\nGoodbye\r\n")
+						break loop
+					//return api.Machine{}, errors.New("user terminated session")
+					}
+					buf = append(buf, b[0])
+				}
+			}
+		}
+		session.Close()
+	//for {
+	//	s.SessionForward(session, newChannel, chans)
+	//}
+	//sesschan.Close()
+
 	case "direct-tcpip":
 		s.ChannelForward(session, newChannel)
 	default:

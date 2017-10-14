@@ -253,3 +253,7 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	proxy(maskedReqs, reqs2, sesschan, channel2)
 
 }
+func (s *Session)Close() {
+	log.Info("Session","Session Close")
+	s.Conn.Close()
+}

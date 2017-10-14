@@ -14,7 +14,7 @@ import (
 func DefaultInteractive(comm io.ReadWriter, session *Session) (api.Machine, error) {
 	//remotes := session.Remotes
 	count := 0
-	fmt.Fprintf(comm, "%s, 欢迎使用Jumpserver开源跳板机系统\r\n", session.Conn.User())
+
 	remotes := []api.Machine{}
 	for _, v := range session.Machines {
 		for _, u := range v.Users {
