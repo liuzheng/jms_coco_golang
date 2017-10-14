@@ -138,7 +138,14 @@ func (s *Server) HandleConn(c net.Conn) {
 			log.Panic("session", "%v", err)
 		}
 		conn := rw{Reader: sesschan, Writer: sesschan.Stderr()}
-		menu, _ := NewManue(conn, session)
+		menu, err := NewManue(conn, session)
+		if err != nil {
+			log.Error("Session", "%v", err)
+			session.Close()
+			return
+		}
+		fmt.Fprintf(conn, "\033[1;32m  %s, 欢迎使用Jumpserver开源跳板机系统  \033[0m\r\n", session.Conn.User())
+
 		menu.Welcome()
 		loop:
 		for {
