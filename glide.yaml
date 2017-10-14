@@ -6,5 +6,3 @@ import:
   subpackages:
   - ssh
   - ssh/terminal
-#- package: golang.org/x/sys
-#  repo: git@github.com:golang/sys.git

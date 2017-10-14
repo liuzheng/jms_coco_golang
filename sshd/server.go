@@ -12,7 +12,6 @@ import (
 	"coco/api"
 	"coco/util"
 	"fmt"
-	"strconv"
 )
 
 var (
@@ -152,34 +151,51 @@ func (s *Server) HandleConn(c net.Conn) {
 			fmt.Fprint(conn, "\r\nOpt>")
 			var buf []byte
 			b := make([]byte, 1)
-			var (
-				n int
-			)
 			for {
-				n, err = conn.Read(b)
+				n, err := conn.Read(b)
+				if err != nil {
+					log.Error("Server", "%v", err)
+					fmt.Fprint(conn, "^D")
+					fmt.Fprint(conn, "\r\nGoodbye\r\n")
+					break loop
+				}
 				if n >= 0 {
-					fmt.Fprintf(conn, "%s", b)
 					switch b[0] {
 					case '\r':
-						fmt.Fprintln(conn, "")
-						res, err := strconv.ParseInt(string(buf), 10, 64)
-						if log.HandleErr("DefaultInteractive", err) {
-							fmt.Fprint(conn, "input not a valid integer. Please try again")
-							continue loop
+						if len(buf) > 0 {
+							fmt.Fprint(conn, "\r\n")
+							switch string(buf) {
+							default:
+								fmt.Fprint(conn, "Error Input")
+								continue loop
+							}
 						}
-						if int(res) >= 2 || res < 0 {
-							fmt.Fprint(conn, "No such server. Please try again")
-							continue loop
-						}
+						continue loop
+					//res, err := strconv.ParseInt(string(buf), 10, 64)
+					//if log.HandleErr("DefaultInteractive", err) {
+					//	fmt.Fprint(conn, "input not a valid integer. Please try again")
+					//	continue loop
+					//}
+					//if int(res) >= 2 || res < 0 {
+					//	fmt.Fprint(conn, "No such server. Please try again")
+					//	continue loop
+					//}
 					//return remotes[int(res)], nil
 					case 0x03:
 						fmt.Fprint(conn, "^C")
 						continue loop
 					case 0x04:
-						fmt.Fprint(conn, "^D")
-						fmt.Fprint(conn, "\r\nGoodbye\r\n")
+						fmt.Fprint(conn, "^D\r\nGoodbye\r\n")
 						break loop
 					//return api.Machine{}, errors.New("user terminated session")
+					case 0x7f:
+						if l := len(buf); l > 0 {
+							buf = buf[:l - 1]
+							fmt.Fprint(conn, "\b \b")
+						}
+						continue
+					default:
+						fmt.Fprintf(conn, "%s", b)
 					}
 					buf = append(buf, b[0])
 				}
