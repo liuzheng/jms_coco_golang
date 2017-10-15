@@ -165,35 +165,9 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 		}
 	}
 
-	// Log the selection
-	//if s.Selected != nil {
-	//	if err = s.Selected(session, remote); err != nil {
-	//		fmt.Fprintf(stderr, "Remote host selection denied.\r\n")
-	//		sesschan.Close()
-	//		return
-	//	}
-	//}
-
 	fmt.Fprintf(stderr, "Connecting to %s@%s:%d\r\n", remote.Users[0].Username, remote.Ip, remote.Port)
 
-	// Set up the agent
-
-	//agentChan, agentReqs, err := session.Conn.OpenChannel("auth-agent@openssh.com", nil)
-	//if err != nil {
-	//	fmt.Fprintf(stderr, "sshmux requires either agent forwarding or secure channel forwarding.\r\n")
-	//	fmt.Fprintf(stderr, "Either enable agent forwarding (-A), or use a ssh -W proxy command.\r\n")
-	//	fmt.Fprintf(stderr, "For more info, see the Jumpserver's wiki.\r\n")
-	//	sesschan.Close()
-	//	return
-	//}
-	//defer agentChan.Close()
-	//go ssh.DiscardRequests(agentReqs)
-
-	// Set up the client
-
-	//ag := agent.NewClient(agentChan)
-	as := api.New()
-	credit, err := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
+	credit, err := s.API.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
 	if err != nil {
 		log.Error("SessionForward", "GetLoginCredit : %v", err)
 	}
@@ -252,8 +226,4 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	}()
 	proxy(maskedReqs, reqs2, sesschan, channel2)
 
-}
-func (s *Session)Close() {
-	log.Info("Session","Session Close")
-	s.Conn.Close()
 }

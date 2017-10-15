@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"coco/util"
 	"fmt"
+	"coco/util/log"
 )
 
 //初始化一个ApiServer
@@ -48,6 +49,7 @@ func (s *Server) Query(action string, data map[string]interface{}, ret interface
 		if response.StatusCode != 200 {
 			ret = RespErrorJson{}
 		}
+		log.Debug("Query","%v",string(retBody))
 		if err := json.Unmarshal(retBody, ret); err != nil {
 			retErr = &RespError{
 				Code: -500,

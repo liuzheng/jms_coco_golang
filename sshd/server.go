@@ -15,37 +15,6 @@ import (
 	"strings"
 )
 
-var (
-	Hostkey = util.Hostkey
-)
-
-// User describes an authenticable user.
-type User struct {
-	// The public key of the user.
-	PublicKey ssh.PublicKey
-	AuthKeys  string
-	// The name the user will be referred to as. *NOT* the username used when
-	// starting the session.
-	Name      string
-}
-
-// Session describes the current user session.
-type Session struct {
-	// Conn is the ssh.ServerConn associated with the connection.
-	Conn      *ssh.ServerConn
-
-	// User is the current user, or nil if unknown.
-	User      *User
-
-	// Remotes is the allowed set of remote hosts.
-	//Remotes []string
-
-	// PublicKey is the public key used in this session.
-	PublicKey ssh.PublicKey
-
-	Machines  []api.Machine
-}
-
 // Server is the sshmux server instance.
 type Server struct {
 	// Auther checks if a connection is permitted, and returns a user if
@@ -74,25 +43,6 @@ type Server struct {
 	//Selected  func(*Session, string) error
 	sshConfig   *ssh.ServerConfig
 	API         *api.Server
-}
-
-type publicKey struct {
-	publicKey     []byte
-	publicKeyType string
-}
-
-func (p *publicKey) Marshal() []byte {
-	b := make([]byte, len(p.publicKey))
-	copy(b, p.publicKey)
-	return b
-}
-
-func (p *publicKey) Type() string {
-	return p.publicKeyType
-}
-
-func (p *publicKey) Verify([]byte, *ssh.Signature) error {
-	return errors.New("verify not implemented")
 }
 
 // HandleConn takes a net.Conn and runs it through sshmux.
@@ -260,12 +210,10 @@ func (s *Server) Serve(l net.Listener) error {
 }
 
 func (s *Server) auth(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
-	k := key.Marshal()
-	t := key.Type()
 	perm := &ssh.Permissions{
 		Extensions: map[string]string{
-			"pubKey":     string(k),
-			"pubKeyType": t,
+			"pubKey":     string(key.Marshal()),
+			"pubKeyType": key.Type(),
 		},
 	}
 
@@ -281,7 +229,7 @@ func (s *Server) auth(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permission
 func New() *Server {
 	as := api.New()
 
-	hostPrivateKey, err := ioutil.ReadFile(*Hostkey)
+	hostPrivateKey, err := ioutil.ReadFile(*util.Hostkey)
 	if log.HandleErr("sshd Run", err) {
 		panic(err)
 	}
@@ -306,11 +254,7 @@ func New() *Server {
 			return &user, nil
 		}
 
-		//if hasDefaults {
-		//	return nil, nil
-		//}
-
-		//log.Warn("sshd auth", "%s: access denied (username: %s)", c.RemoteAddr(), c.User())
+		log.Warn("sshd auth", "%s: access denied (username: %s)", c.RemoteAddr(), c.User())
 		return nil, errors.New("access denied")
 	}
 
@@ -324,15 +268,6 @@ func New() *Server {
 		log.Info("sshd setup", "%s: %s authorized (username: %s)", session.Conn.RemoteAddr(), username, session.Conn.User())
 		session.Machines, err = as.GetList()
 		log.HandleErr("sshd Run", err)
-		//if Hosts == nil {
-		//	// TODO: need write more code
-		//	log.Error("sshd", "got nothing need write more code")
-		//}
-		////outer:
-		//for _, h := range Hosts {
-		//	session.Remotes = append(session.Remotes, h.Ip)
-		//}
-		//session.Machines =
 		return nil
 	}
 	server := &Server{

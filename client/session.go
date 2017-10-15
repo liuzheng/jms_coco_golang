@@ -18,6 +18,7 @@ type windowDimensionChangeMsg struct {
 	Height  uint32
 }
 
+// 新建会话
 func (c *Client) NewSession() (session *Session, err error) {
 	session.Client = c
 	session.Session, err = c.Client.NewSession()
@@ -27,6 +28,8 @@ func (c *Client) NewSession() (session *Session, err error) {
 	c.Sessions = append(c.Sessions, session)
 	return
 }
+
+// 调整窗口大小
 func (s *Session) Resize(h, w int) error {
 	s.window = windowDimensionChangeMsg{
 		Columns: uint32(w),
@@ -45,6 +48,7 @@ func (s *Session) Close() {
 	remove(s.Client.Sessions, s)
 }
 
+// 从列表移除
 func remove(s []*Session, r *Session) []*Session {
 	for i, v := range s {
 		if v == r {
