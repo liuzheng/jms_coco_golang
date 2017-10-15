@@ -2,7 +2,6 @@ package api
 
 import (
 	"coco/util/log"
-	"fmt"
 )
 
 // 用户名获取用户的 pubkey
@@ -11,8 +10,7 @@ func (s *Server) GetUserPubKey(username string) (UserPubKey, error) {
 	data["username"] = username
 	var rd UserPubKey
 	err := s.Query(s.Action.GetUserPubKey, data, &rd)
-	fmt.Print(err)
-	log.Error("sssss", "Ticket: %v, Key: %v, Err: %v",rd.Ticket, rd.Key,err)
+	log.Error("sssss", "Ticket: %v, Key: %v, Err: %v", rd.Ticket, rd.Key, err)
 	return rd, err
 }
 
