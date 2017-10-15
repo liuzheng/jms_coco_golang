@@ -139,13 +139,12 @@ func (s *Server) HandleConn(c net.Conn) {
 			log.Panic("session", "%v", err)
 		}
 		conn := rw{Reader: sesschan, Writer: sesschan.Stderr()}
-		menu, err := NewManue(conn, session, s.API)
+		menu, err := NewMenu(conn, session, s.API)
 		if err != nil {
 			log.Error("Session", "%v", err)
 			session.Close()
 			return
 		}
-		fmt.Fprintf(conn, "\033[1;32m  %s, 欢迎使用Jumpserver开源跳板机系统  \033[0m\r\n", session.Conn.User())
 
 		menu.Welcome()
 		loop:
@@ -171,8 +170,8 @@ func (s *Server) HandleConn(c net.Conn) {
 								// 输入 P/p 显示您有权限的主机.
 								menu.GetMachineList()
 							case "G":
+								// 输入 G/g 显示您有权限的主机组.
 								menu.GetHostGroup()
-							// 输入 G/g 显示您有权限的主机组.
 							//case "E":
 							////  输入 E/e 批量执行命令.(未完成)
 							//case "U":
