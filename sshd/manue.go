@@ -12,7 +12,7 @@ type Manue struct {
 }
 
 var (
-	welcome = []string{
+	help = []string{
 		"输入 \033[32mID\033[0m 直接登录 或 输入\033[32m部分 IP,主机名,备注\033[0m 进行搜索登录(如果唯一).",
 		"输入 \033[32m/\033[0m + \033[32mIP, 主机名 or 备注 \033[0m搜索. 如: /ip",
 		"输入 \033[32mP/p\033[0m 显示您有权限的主机.",
@@ -25,23 +25,27 @@ var (
 		"输入 \033[32mQ/q\033[0m 退出.",
 	}
 )
-
-func NewManue(conn rw, session *Session, s *api.Server) (manue Manue, err error) {
+// 初始化menu
+func NewMenu(conn rw, session *Session, s *api.Server) (manue Manue, err error) {
 	manue = Manue{Conn:conn, Session:session, API:s}
 	return
 }
 
+// 欢迎页
 func (m *Manue)Welcome() {
-	for k, v := range welcome {
-		fmt.Fprintf(m.Conn, "    %d) %s\r\n", k, v)
-	}
+	fmt.Fprintf(m.Conn, "\033[1;32m  %s, 欢迎使用Jumpserver开源跳板机系统  \033[0m\r\n", m.Session.Conn.User())
+	m.GetHelp()
 }
+
+// 获取主机列表
 func (m *Manue)GetMachineList() {
 	count := 0
 	remotes := []api.Machine{}
+	format := "[%-4d]\t%-16s\t%-5d\t%s\t%s\t%s\r\n"
+	fmt.Fprintf(m.Conn, "[%-4s]\t%-16s\t%-5s\t%s\t%s\t%s\r\n", "ID", "IP", "Port", "Hostname", "Username", "Comment")
 	for _, v := range m.Session.Machines {
 		for _, u := range v.Users {
-			fmt.Fprintf(m.Conn, "    [%d] %s@%s:%d  %s\r\n", count, u.Username, v.Ip, v.Port, v.Remark)
+			fmt.Fprintf(m.Conn, format, count, v.Ip, v.Port, "hostname", u.Username, v.Remark)
 			remotes = append(remotes, api.Machine{
 				Ip:     v.Ip,
 				Port:   v.Port,
@@ -55,15 +59,25 @@ func (m *Manue)GetMachineList() {
 	}
 
 }
+
+// 获取主机组内主机列表
 func (m *Manue)GetHostGroup() {
 
 }
-func (m *Manue)GetHelp() {
 
+// 帮助页
+func (m *Manue)GetHelp() {
+	for k, v := range help {
+		fmt.Fprintf(m.Conn, "    %d) %s\r\n", k, v)
+	}
 }
+
+// 获取主机组列表
 func (m *Manue)GetHostGroupList(id string) {
 
 }
+
+// 搜索主机
 func (m *Manue)Search(q string) {
 
 }
