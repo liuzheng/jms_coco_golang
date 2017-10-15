@@ -1,16 +1,18 @@
 package api
 
 import (
-	"encoding/json"
+	"coco/util/log"
+	"fmt"
 )
 
 // 用户名获取用户的 pubkey
 func (s *Server) GetUserPubKey(username string) (UserPubKey, error) {
 	data := s.CreateQueryData()
 	data["username"] = username
-	res, _ := s.Query(s.Action.GetUserPubKey, data)
 	var rd UserPubKey
-	err := json.Unmarshal(res, &rd)
+	err := s.Query(s.Action.GetUserPubKey, data, &rd)
+	fmt.Print(err)
+	log.Error("sssss", rd.Ticket, rd.Key,err.(RespError).Raw)
 	return rd, err
 }
 
@@ -19,9 +21,9 @@ func (s *Server) GetLoginToken(username, ticket string) (UserToken, error) {
 	data := s.CreateQueryData()
 	data["username"] = username
 	data["ticket"] = ticket
-	res, _ := s.Query(s.Action.GetUserToken, data)
 	var rd UserToken
-	err := json.Unmarshal(res, &rd)
+	err := s.Query(s.Action.GetUserToken, data, rd)
+	s.Token = rd
 	return rd, err
 }
 
@@ -29,8 +31,7 @@ func (s *Server) GetLoginToken(username, ticket string) (UserToken, error) {
 func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, error) {
 	data := s.CreateQueryData()
 	data["session_id"] = sessionId
-	res, _ := s.Query(s.Action.CheckMonitorToken, data)
 	var rd ResponsePass
-	err := json.Unmarshal(res, &rd)
+	err := s.Query(s.Action.CheckMonitorToken, data, rd)
 	return rd, err
 }

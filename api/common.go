@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"net/http"
 	"io/ioutil"
-	"errors"
 	"encoding/json"
 	"coco/util"
+	"fmt"
 )
 
 //初始化一个ApiServer
@@ -32,7 +32,7 @@ func New() *Server {
 }
 
 //发起HTTP请求
-func (s *Server) Query(action string, data map[string]interface{}) ([]byte, error) {
+func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (error) {
 	client := &http.Client{}
 	dataJson, _ := json.Marshal(data)
 	reqNew := bytes.NewBuffer(dataJson)
@@ -41,17 +41,43 @@ func (s *Server) Query(action string, data map[string]interface{}) ([]byte, erro
 	request.Header.Set("Content-type", "application/json")
 	request.Header.Set("Token", s.Token.Token)
 	request.Header.Set("AppId", s.AppId)
-	response, _ := client.Do(request)
-	s.Token = UserToken{}
-	if response.StatusCode == 200 {
-		body, _ := ioutil.ReadAll(response.Body)
-		return body, nil
+	var retErr error
+	//发起HTTP请求
+	if response, err := client.Do(request); err == nil {
+		retBody, _ := ioutil.ReadAll(response.Body)
+		if response.StatusCode != 200 {
+			ret = RespErrorJson{}
+		}
+		if err := json.Unmarshal(retBody, ret); err != nil {
+			retErr = &RespError{
+				Code: -500,
+				Msg:  "Json返回解析发生错误",
+				Raw:  err.Error(),
+			}
+		}
+		if response.StatusCode != 200 {
+			retErr = &RespError{
+				Code: response.StatusCode,
+				Msg:  ret.(RespErrorJson).Error,
+				Raw:  response.Status,
+			}
+		}
 	} else {
-		return []byte{}, errors.New("Http Request Failed")
+		retErr = &RespError{
+			Code: -500,
+			Msg:  "发起HTTP请求发生错误",
+			Raw:  err.Error(),
+		}
 	}
+	return retErr
 }
 
 //创建请求数据Map
 func (s *Server) CreateQueryData() map[string]interface{} {
 	return make(map[string]interface{})
+}
+
+//API的错误处理
+func (re *RespError) Error() string {
+	return fmt.Sprintf("API请求错误，代码：%v ，错误信息：%v", re.Code, re.Msg)
 }

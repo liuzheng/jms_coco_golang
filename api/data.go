@@ -63,3 +63,16 @@ type UserPubKey struct {
 type ResponsePass struct {
 	Pass bool
 }
+
+//API错误信息
+type RespErrorJson struct {
+	Error string
+}
+
+//API错误
+type RespError struct {
+	error
+	Code int
+	Msg  string
+	Raw  string
+}

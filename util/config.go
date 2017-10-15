@@ -32,8 +32,8 @@ func CheckConfig() {
 	} else {
 		log.Info("Config", "读取配置 AppKey：%s", log.Password(*AppKey))
 	}
-	log.Info("Config", "读取配置 HostKey：%s", *Hostkey)
-	log.Info("Config", "读取配置 Ip：%s", *Ip)
+	log.Info("Config", "读取配置 HostKeyFile：%s", *Hostkey)
+	log.Info("Config", "读取配置 服务Ip：%s", *Ip)
 	log.Info("Config", "读取配置 WsPort：%d", *WsPort)
 	log.Info("Config", "读取配置 SshPort：%d", *SshPort)
 }
