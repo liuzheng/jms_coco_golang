@@ -26,7 +26,7 @@ imports:
   - ssh
   - ssh/terminal
 - name: golang.org/x/sys
-  version: 686000749eaec0b8855b8eef5336cf63899fe51d
+  version: 5ebad5b16dbc66cbaef4f6d31ee0b91d9b49567a
   subpackages:
   - unix
 testImports: []

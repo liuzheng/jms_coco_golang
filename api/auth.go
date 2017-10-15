@@ -12,7 +12,7 @@ func (s *Server) GetUserPubKey(username string) (UserPubKey, error) {
 	var rd UserPubKey
 	err := s.Query(s.Action.GetUserPubKey, data, &rd)
 	fmt.Print(err)
-	log.Error("sssss", rd.Ticket, rd.Key,err.(RespError).Raw)
+	log.Error("sssss", "Ticket: %v, Key: %v, Err: %v",rd.Ticket, rd.Key,err)
 	return rd, err
 }
 
