@@ -1,7 +1,8 @@
 package api
 
+import "coco/util/errors"
 // 用户名获取用户的 pubkey
-func (s *Server) GetUserPubKey(username string) (UserPubKey, error) {
+func (s *Server) GetUserPubKey(username string) (UserPubKey, errors.Error) {
 	data := s.CreateQueryData()
 	data["username"] = username
 	var rd UserPubKey
@@ -10,7 +11,7 @@ func (s *Server) GetUserPubKey(username string) (UserPubKey, error) {
 }
 
 // 获取登陆用户TOKEN
-func (s *Server) GetLoginToken(username, ticket string) (UserToken, error) {
+func (s *Server) GetLoginToken(username, ticket string) (UserToken, errors.Error) {
 	data := s.CreateQueryData()
 	data["username"] = username
 	data["ticket"] = ticket
@@ -21,7 +22,7 @@ func (s *Server) GetLoginToken(username, ticket string) (UserToken, error) {
 }
 
 // 检查用户能否开启监控SHELL
-func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, error) {
+func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, errors.Error) {
 	data := s.CreateQueryData()
 	data["session_id"] = sessionId
 	var rd ResponsePass

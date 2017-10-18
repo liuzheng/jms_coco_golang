@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"coco/util"
 	"coco/util/log"
+	"coco/util/errors"
 )
 
 //初始化一个ApiServer
@@ -34,7 +35,7 @@ func New() *Server {
 }
 
 //发起HTTP请求
-func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (aErrData error) {
+func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (aErrData errors.Error) {
 	client := &http.Client{}
 	dataJson, sErr := json.Marshal(data)
 	log.Debug("REQUEST", "%v", string(dataJson))
@@ -50,7 +51,8 @@ func (s *Server) Query(action string, data map[string]interface{}, ret interface
 		log.Debug("RESPONSE", "%v", string(retBody))
 		sErr = json.Unmarshal(retBody, &aErrData)
 		sErr = json.Unmarshal(retBody, ret)
-		aErrData.SetCode(response.StatusCode)
+		log.Debug("Query", "%v", response.StatusCode)
+		aErrData = errors.New("", response.StatusCode)
 	}
 	if sErr != nil {
 		log.Error("APISYS", sErr.Error())

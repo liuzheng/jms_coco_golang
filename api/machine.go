@@ -1,7 +1,8 @@
 package api
 
+import "coco/util/errors"
 // 获取可用服务器列表
-func (s *Server) GetList(keyword string, groupId int) ([]Machine, error) {
+func (s *Server) GetList(keyword string, groupId int) ([]Machine, errors.Error) {
 	data := s.CreateQueryData()
 	data["keyword"] = keyword
 	data["group_id"] = groupId
@@ -11,7 +12,7 @@ func (s *Server) GetList(keyword string, groupId int) ([]Machine, error) {
 }
 
 // 获取服务器登陆凭证
-func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, error) {
+func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, errors.Error) {
 	data := s.CreateQueryData()
 	var rd LoginCredit
 	err := s.Query(s.Action.GetLoginCredit, data, &rd)

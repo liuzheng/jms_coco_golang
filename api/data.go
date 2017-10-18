@@ -1,6 +1,5 @@
 package api
 
-import "coco/util/errors"
 //jms服务器配置
 type Server struct {
 	Url     string
@@ -73,5 +72,3 @@ type UserPubKey struct {
 type ResponsePass struct {
 	Pass bool
 }
-
-type error errors.Error

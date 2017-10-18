@@ -1,7 +1,8 @@
 package api
 
+import "coco/util/errors"
 //向JMS注册信息
-func (s *Server) Register() (ResponsePass, error) {
+func (s *Server) Register() (ResponsePass, errors.Error) {
 	data := s.CreateQueryData()
 	data["ip"] = s.Ip
 	data["ws_port"] = s.WsPort
