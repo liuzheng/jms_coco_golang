@@ -14,13 +14,15 @@ type Server struct {
 
 // api操作对应URL
 type Action struct {
-	GetUserPubKey     string
-	GetUserToken      string
-	GetMachineList    string
-	GetLoginCredit    string
-	CheckMonitorToken string
-	Register          string
-	ReportSession     string
+	GetUserPubKey       string
+	GetUserToken        string
+	GetMachineList      string
+	GetLoginCredit      string
+	CheckMonitorToken   string
+	Register            string
+	ReportSession       string
+	ReportSessionClose  string
+	GetMachineGroupList string
 }
 
 // 用户登陆TOKEN
@@ -47,6 +49,13 @@ type Machine struct {
 	Users  []MachineUser
 }
 
+//服务器组列表
+type MachineGroup struct {
+	Gid    int
+	Name   string
+	Remark string
+}
+
 // 服务器列表可用用户
 type MachineUser struct {
 	Uid      int
@@ -64,15 +73,8 @@ type ResponsePass struct {
 	Pass bool
 }
 
-//API错误信息
-type RespErrorJson struct {
-	Error string
-}
-
 //API错误
 type RespError struct {
-	error
-	Code int
-	Msg  string
-	Raw  string
+	ErrorCode int
+	ErrorMsg  string `json:"error"`
 }

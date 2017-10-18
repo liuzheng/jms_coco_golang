@@ -167,8 +167,8 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	fmt.Fprintf(stderr, "Connecting to %s@%s:%d\r\n", remote.Users[0].Username, remote.Ip, remote.Port)
 
-	credit, err := s.API.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
-	if err != nil {
+	credit, aErr := s.API.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
+	if aErr.ErrorCode != 200 {
 		log.Error("SessionForward", "GetLoginCredit : %v", err)
 	}
 	log.Debug("SessionForward", "%v", credit.PrivateKey)

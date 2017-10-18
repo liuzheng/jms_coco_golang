@@ -90,8 +90,8 @@ func New() (server *socketio.Server) {
 			soin.Write([]byte(msg))
 		})
 		so.On("login", func(username string) {
-			t.Key, err = as.GetUserPubKey(username)
-			log.HandleErr("sshd New", err)
+			t.Key, _ = as.GetUserPubKey(username)
+			//log.HandleErr("sshd New", err)
 			//if err != nil {
 			//	log.Error("ServerInit", "%v", err)
 			//}
@@ -99,7 +99,7 @@ func New() (server *socketio.Server) {
 			//if err != nil {
 			//	log.Error("ServerInit", "%v", err)
 			//}
-			t.Machines, err = as.GetList()
+			t.Machines, _ = as.GetList("",0)  //TODO： 这里的方法有点问题
 			if err != nil {
 				log.Error("ServerInit", "%v", err)
 			}
@@ -115,10 +115,10 @@ func New() (server *socketio.Server) {
 				so.Emit("disconnect")
 				return
 			}
-			credit, err := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
-			if err != nil {
-				log.Error("ServerInit", "GetLoginCredit : %v", err)
-			}
+			credit, _ := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid)//TODO： 这里的方法有点问题
+			//if err != nil {
+			//	log.Error("ServerInit", "GetLoginCredit : %v", err)
+			//}
 			connect, err := client.New(remote, credit)
 			session, err = connect.NewSession()
 			soin, err = session.Session.StdinPipe()

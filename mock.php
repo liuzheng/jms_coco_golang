@@ -17,6 +17,25 @@ switch ($_GET['act']) {
             'pass' => false
         ]);
         break;
+    case 'machine_groups':
+        echo json_encode([
+            [
+                'gid' => 1,
+                'name' => '测试服务器组1',
+                'remark' => 'Mock Server Test'
+            ],
+            [
+                'gid' => 2,
+                'name' => '樱花庄服务器组',
+                'remark' => 'Mock Server Test'
+            ],
+            [
+                'gid' => 3,
+                'name' => '阿里云服务器组',
+                'remark' => 'Mock Server Test'
+            ]
+        ]);
+        break;
     case 'machines':
         echo json_encode([
             [

@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"coco/util"
-	"fmt"
 	"coco/util/log"
+	"fmt"
 )
 
 //初始化一个ApiServer
@@ -21,65 +21,46 @@ func New() *Server {
 		SshPort: *util.SshPort,
 	}
 	server.Action = Action{
-		GetUserPubKey:     "mock.php?act=getpubkey",
-		GetUserToken:      "mock.php?act=getusertoken",
-		CheckMonitorToken: "mock.php?act=checkmonitortoken",
-		GetMachineList:    "mock.php?act=machines",
-		GetLoginCredit:    "mock.php?act=getcredit",
-		ReportSession:     "mock.php?act=reportsession",
-		Register:          "mock.php?act=register",
+		GetUserPubKey:       "mock.php?act=getpubkey",
+		GetUserToken:        "mock.php?act=getusertoken",
+		CheckMonitorToken:   "mock.php?act=checkmonitortoken",
+		GetMachineList:      "mock.php?act=machines",
+		GetMachineGroupList: "mock.php?act=machine_groups",
+		GetLoginCredit:      "mock.php?act=getcredit",
+		ReportSession:       "mock.php?act=reportsession",
+		ReportSessionClose:  "mock.php?act=reportsessionclose",
+		Register:            "mock.php?act=register",
 	}
 	return &server
 }
 
 //发起HTTP请求
-func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (error) {
+func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (aErr RespError) {
 	client := &http.Client{}
-	dataJson, _ := json.Marshal(data)
+	dataJson, sErr := json.Marshal(data)
+	log.Debug("REQUEST", "%v", string(dataJson))
 	reqNew := bytes.NewBuffer(dataJson)
 	uri := s.Url + "/" + action
 	request, _ := http.NewRequest("POST", uri, reqNew)
 	request.Header.Set("Content-type", "application/json")
 	request.Header.Set("Token", s.Token.Token)
 	request.Header.Set("AppId", s.AppId)
-	var retErr error
+	var aErrData RespError
 	//发起HTTP请求
-	if response, err := client.Do(request); err == nil {
+	if response, sErr := client.Do(request); sErr == nil {
 		retBody, _ := ioutil.ReadAll(response.Body)
-		if response.StatusCode != 200 {
-			ret = RespErrorJson{}
-		}
-		log.Debug("Query","%v",string(retBody))
-		if err := json.Unmarshal(retBody, ret); err != nil {
-			retErr = &RespError{
-				Code: -500,
-				Msg:  "Json返回解析发生错误",
-				Raw:  err.Error(),
-			}
-		}
-		if response.StatusCode != 200 {
-			retErr = &RespError{
-				Code: response.StatusCode,
-				Msg:  ret.(RespErrorJson).Error,
-				Raw:  response.Status,
-			}
-		}
-	} else {
-		retErr = &RespError{
-			Code: -500,
-			Msg:  "发起HTTP请求发生错误",
-			Raw:  err.Error(),
-		}
+		log.Debug("RESPONSE", "%v", string(retBody))
+		sErr = json.Unmarshal(retBody, &aErrData)
+		sErr = json.Unmarshal(retBody, ret)
+		aErrData.ErrorCode = response.StatusCode
 	}
-	return retErr
+	if sErr != nil {
+		log.Error("APISYS", sErr.Error())
+	}
+	return
 }
 
 //创建请求数据Map
 func (s *Server) CreateQueryData() map[string]interface{} {
 	return make(map[string]interface{})
-}
-
-//API的错误处理
-func (re *RespError) Error() string {
-	return fmt.Sprintf("API请求错误，代码：%v ，错误信息：%v", re.Code, re.Msg)
 }
