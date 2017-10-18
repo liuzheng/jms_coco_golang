@@ -1,7 +1,7 @@
 package api
 
 // 用户名获取用户的 pubkey
-func (s *Server) GetUserPubKey(username string) (UserPubKey, RespError) {
+func (s *Server) GetUserPubKey(username string) (UserPubKey, error) {
 	data := s.CreateQueryData()
 	data["username"] = username
 	var rd UserPubKey
@@ -10,7 +10,7 @@ func (s *Server) GetUserPubKey(username string) (UserPubKey, RespError) {
 }
 
 // 获取登陆用户TOKEN
-func (s *Server) GetLoginToken(username, ticket string) (UserToken, RespError) {
+func (s *Server) GetLoginToken(username, ticket string) (UserToken, error) {
 	data := s.CreateQueryData()
 	data["username"] = username
 	data["ticket"] = ticket
@@ -21,7 +21,7 @@ func (s *Server) GetLoginToken(username, ticket string) (UserToken, RespError) {
 }
 
 // 检查用户能否开启监控SHELL
-func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, RespError) {
+func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, error) {
 	data := s.CreateQueryData()
 	data["session_id"] = sessionId
 	var rd ResponsePass

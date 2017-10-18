@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"coco/util"
 	"coco/util/log"
-	"fmt"
 )
 
 //初始化一个ApiServer
@@ -35,7 +34,7 @@ func New() *Server {
 }
 
 //发起HTTP请求
-func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (aErr RespError) {
+func (s *Server) Query(action string, data map[string]interface{}, ret interface{}) (aErrData error) {
 	client := &http.Client{}
 	dataJson, sErr := json.Marshal(data)
 	log.Debug("REQUEST", "%v", string(dataJson))
@@ -45,14 +44,13 @@ func (s *Server) Query(action string, data map[string]interface{}, ret interface
 	request.Header.Set("Content-type", "application/json")
 	request.Header.Set("Token", s.Token.Token)
 	request.Header.Set("AppId", s.AppId)
-	var aErrData RespError
 	//发起HTTP请求
 	if response, sErr := client.Do(request); sErr == nil {
 		retBody, _ := ioutil.ReadAll(response.Body)
 		log.Debug("RESPONSE", "%v", string(retBody))
 		sErr = json.Unmarshal(retBody, &aErrData)
 		sErr = json.Unmarshal(retBody, ret)
-		aErrData.ErrorCode = response.StatusCode
+		aErrData.SetCode(response.StatusCode)
 	}
 	if sErr != nil {
 		log.Error("APISYS", sErr.Error())

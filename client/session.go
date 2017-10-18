@@ -2,7 +2,7 @@ package client
 
 import (
 	"golang.org/x/crypto/ssh"
-	"errors"
+	"coco/util/errors"
 )
 
 type Session struct {
@@ -19,18 +19,20 @@ type windowDimensionChangeMsg struct {
 }
 
 // 新建会话
-func (c *Client) NewSession() (session *Session, err error) {
+func (c *Client) NewSession() (session *Session, erro errors.Error) {
+	var err error
 	session.Client = c
 	session.Session, err = c.Client.NewSession()
 	if err != nil {
 		panic("Failed to create session: " + err.Error())
+		erro = errors.New(err.Error(), 400)
 	}
 	c.Sessions = append(c.Sessions, session)
 	return
 }
 
 // 调整窗口大小
-func (s *Session) Resize(h, w int) error {
+func (s *Session) Resize(h, w int) (erro errors.Error) {
 	s.window = windowDimensionChangeMsg{
 		Columns: uint32(w),
 		Rows:    uint32(h),
@@ -39,9 +41,9 @@ func (s *Session) Resize(h, w int) error {
 	}
 	ok, err := s.Session.SendRequest("window-change", true, ssh.Marshal(&s.window))
 	if err == nil && !ok {
-		err = errors.New("ssh: window-change failed")
+		erro = errors.New("ssh: window-change failed", 400)
 	}
-	return err
+	return
 }
 func (s *Session) Close() {
 	s.Session.Close()
@@ -52,7 +54,7 @@ func (s *Session) Close() {
 func remove(s []*Session, r *Session) []*Session {
 	for i, v := range s {
 		if v == r {
-			return append(s[:i], s[i+1:]...)
+			return append(s[:i], s[i + 1:]...)
 		}
 	}
 	return s

@@ -1,7 +1,7 @@
 package api
 
 //向JMS注册信息
-func (s *Server) Register() (ResponsePass, RespError) {
+func (s *Server) Register() (ResponsePass, error) {
 	data := s.CreateQueryData()
 	data["ip"] = s.Ip
 	data["ws_port"] = s.WsPort

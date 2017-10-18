@@ -1,5 +1,6 @@
 package api
 
+import "coco/util/errors"
 //jms服务器配置
 type Server struct {
 	Url     string
@@ -73,8 +74,4 @@ type ResponsePass struct {
 	Pass bool
 }
 
-//API错误
-type RespError struct {
-	ErrorCode int
-	ErrorMsg  string `json:"error"`
-}
+type error errors.Error

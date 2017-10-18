@@ -1,17 +1,17 @@
 package sshd
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strconv"
 	"coco/api"
 	"coco/util/log"
+	"coco/util/errors"
 )
 
 // DefaultInteractive is the default server selection prompt for users during
 // session forward.
-func DefaultInteractive(comm io.ReadWriter, session *Session) (api.Machine, error) {
+func DefaultInteractive(comm io.ReadWriter, session *Session) (api.Machine, errors.Error) {
 	//remotes := session.Remotes
 	count := 0
 
@@ -32,18 +32,18 @@ func DefaultInteractive(comm io.ReadWriter, session *Session) (api.Machine, erro
 	}
 
 	// Beware, nasty input parsing loop
-loop:
+	loop:
 	for {
 		fmt.Fprint(comm, "Please select remote server: ")
 		var buf []byte
 		b := make([]byte, 1)
 		var (
-			n   int
+			n int
 			err error
 		)
 		for {
 			if log.HandleErr("DefaultInteractive", err) {
-				return api.Machine{}, err
+				return api.Machine{}, errors.New(err.Error(), 200)
 			}
 			n, err = comm.Read(b)
 			if n >= 0 {
@@ -63,7 +63,7 @@ loop:
 					return remotes[int(res)], nil
 				case 0x03:
 					fmt.Fprintln(comm, "\r\nGoodbye")
-					return api.Machine{}, errors.New("user terminated session")
+					return api.Machine{}, errors.New("user terminated session", 400)
 				}
 				buf = append(buf, b[0])
 			}

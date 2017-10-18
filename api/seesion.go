@@ -1,7 +1,8 @@
 package api
 
+
 //上报开启的Session
-func (s *Server) ReportSession(sessionId string, serverId, userId, seq int) (ResponsePass, RespError) {
+func (s *Server) ReportSession(sessionId string, serverId, userId, seq int) (ResponsePass, error) {
 	data := s.CreateQueryData()
 	data["session_id"] = sessionId
 	var rd ResponsePass
@@ -9,7 +10,7 @@ func (s *Server) ReportSession(sessionId string, serverId, userId, seq int) (Res
 	return rd, err
 }
 
-func (s *Server) ReportSessionClose(sessionId string) (ResponsePass, RespError) {
+func (s *Server) ReportSessionClose(sessionId string) (ResponsePass, error) {
 	data := s.CreateQueryData()
 	data["session_id"] = sessionId
 	var rd ResponsePass

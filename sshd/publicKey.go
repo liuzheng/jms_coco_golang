@@ -1,7 +1,7 @@
 package sshd
 
 import (
-	"errors"
+	"coco/util/errors"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -21,5 +21,5 @@ func (p *publicKey) Type() string {
 }
 
 func (p *publicKey) Verify([]byte, *ssh.Signature) error {
-	return errors.New("verify not implemented")
+	return errors.New("verify not implemented", errors.PermissionDenied)
 }

@@ -1,7 +1,7 @@
 package api
 
 // 获取可用服务器列表
-func (s *Server) GetList(keyword string, groupId int) ([]Machine, RespError) {
+func (s *Server) GetList(keyword string, groupId int) ([]Machine, error) {
 	data := s.CreateQueryData()
 	data["keyword"] = keyword
 	data["group_id"] = groupId
@@ -11,7 +11,7 @@ func (s *Server) GetList(keyword string, groupId int) ([]Machine, RespError) {
 }
 
 // 获取服务器登陆凭证
-func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, RespError) {
+func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, error) {
 	data := s.CreateQueryData()
 	var rd LoginCredit
 	err := s.Query(s.Action.GetLoginCredit, data, &rd)
@@ -19,7 +19,7 @@ func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, RespError) {
 }
 
 //获取服务器组
-func (s *Server) GetGroupList() ([]MachineGroup, RespError) {
+func (s *Server) GetGroupList() ([]MachineGroup, error) {
 	data := s.CreateQueryData()
 	var rd []MachineGroup
 	err := s.Query(s.Action.GetMachineGroupList, data, &rd)
