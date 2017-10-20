@@ -26,6 +26,7 @@ func (c *Client) NewSession() (session *Session, erro errors.Error) {
 	if err != nil {
 		panic("Failed to create session: " + err.Error())
 		erro = errors.New(err.Error(), 400)
+		return
 	}
 	c.Sessions = append(c.Sessions, session)
 	return
@@ -54,7 +55,7 @@ func (s *Session) Close() {
 func remove(s []*Session, r *Session) []*Session {
 	for i, v := range s {
 		if v == r {
-			return append(s[:i], s[i + 1:]...)
+			return append(s[:i], s[i+1:]...)
 		}
 	}
 	return s

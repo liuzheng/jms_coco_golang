@@ -14,7 +14,7 @@ imports:
 - name: github.com/gorilla/websocket
   version: 71fa72d4842364bc5f74185f4161e0099ea3624a
 - name: github.com/liuzheng712/golog
-  version: e3a6ba0392cdc06ffd1cd86f0d8eebe6465a2a59
+  version: 9bd20b553d2c0cadafe5960665b777975f94f332
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: golang.org/x/crypto

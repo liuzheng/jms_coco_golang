@@ -8,28 +8,28 @@ type Error interface {
 }
 
 //API错误
-type RespError struct {
+type UtilError struct {
 	ErrorMsg  string `json:"error"`
-	ErrorCode int
+	ErrorCode int `json:"code"`
 }
 
 // New returns an error that formats as the given text.
 func New(text string, code int) Error {
-	return &RespError{ErrorMsg:text, ErrorCode:code}
+	return &UtilError{ErrorMsg:text, ErrorCode:code}
 }
 
-func (e *RespError) Error() string {
+func (e *UtilError) Error() string {
 	return e.ErrorMsg
 }
 
-func (e *RespError) GetCode() int {
+func (e *UtilError) GetCode() int {
 	return e.ErrorCode
 }
 
-func (e *RespError)SetCode(code int) {
+func (e *UtilError)SetCode(code int) {
 	e.ErrorCode = code
 }
 
-func (e *RespError)SetError(err string) {
+func (e *UtilError)SetError(err string) {
 	e.ErrorMsg = err
 }

@@ -24,17 +24,15 @@ func (t *TTY) GetTermSize() (termWidth, termHeight int, err error) {
 
 	fd := int(os.Stdin.Fd())
 	oldState, err := terminal.MakeRaw(fd)
-	if err != nil {
-		log.Error("GetTermSize", "创建文件描述符: %v", err)
-		return
-	}
-
-	termWidth, termHeight, err = terminal.GetSize(fd)
-	if err != nil {
-		log.Error("GetTermSize", "获取窗口宽高: %v", err)
+	if log.HandleErr("GetTermSize", err, "创建文件描述符错误") {
 		return
 	}
 	defer terminal.Restore(fd, oldState)
+
+	termWidth, termHeight, err = terminal.GetSize(fd)
+	if log.HandleErr("GetTermSize", err, "获取窗口宽高错误") {
+		return
+	}
 	return
 
 }
@@ -66,8 +64,8 @@ func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
 
 func New() (server *socketio.Server) {
 	server, err := socketio.NewServer(nil)
-	if err != nil {
-		log.Fatal("ServerInit", "%v", err)
+	if log.HandleErr("ServerInit", err, "初始化错误") {
+		return
 	}
 	server.On("connection", func(so socketio.Socket) {
 		log.Info("ServerInit", "on connection")
@@ -99,7 +97,7 @@ func New() (server *socketio.Server) {
 			//if err != nil {
 			//	log.Error("ServerInit", "%v", err)
 			//}
-			t.Machines, _ = as.GetList("",0)  //TODO： 这里的方法有点问题
+			t.Machines, _ = as.GetList("", 0) //TODO： 这里的方法有点问题
 			if err != nil {
 				log.Error("ServerInit", "%v", err)
 			}
@@ -115,24 +113,33 @@ func New() (server *socketio.Server) {
 				so.Emit("disconnect")
 				return
 			}
-			credit, _ := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid)//TODO： 这里的方法有点问题
-			//if err != nil {
-			//	log.Error("ServerInit", "GetLoginCredit : %v", err)
-			//}
+			credit, err := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid) //TODO： 这里的方法有点问题
+			if log.HandleErr("ServerInit", err, "GetLoginCredit err") {
+				return
+			}
+
 			connect, err := client.New(remote, credit)
+			if log.HandleErr("Socket", err) {
+				return
+			}
+			defer connect.Close()
+
 			session, err = connect.NewSession()
+			if log.HandleErr("Socket", err) {
+				return
+			}
+			defer session.Close()
+
 			soin, err = session.Session.StdinPipe()
 			log.HandleErr("ServerInit", err)
 			soout, err = session.Session.StdoutPipe()
 			log.HandleErr("ServerInit", err)
 
-			if err := session.Session.RequestPty("xterm", 24, 80, modes); err != nil {
-				log.Error("ServerInit", "1request for pseudo terminal failed: %v", err)
+			if err := session.Session.RequestPty("xterm", 24, 80, modes); log.HandleErr("ServerInit", err, "1request for pseudo terminal failed") {
 				return
 			}
 			err = session.Session.Shell()
-			if err != nil {
-				log.Error("ServerInit", "执行Shell出错: %v", err)
+			if log.HandleErr("ServerInit", err, "执行Shell出错") {
 				return
 			}
 			//err = session.Wait()
@@ -166,16 +173,13 @@ func New() (server *socketio.Server) {
 		})
 		so.On("resize", func(size []int) {
 			log.Debug("ServerInit", "resize to: %v", size)
-			if err := session.Resize(size[1], size[0]); err != nil {
-				log.Error("ServerInit", "request for pseudo terminal failed: %v", err)
+			if err := session.Resize(size[1], size[0]); log.HandleErr("ServerInit", err, "request for pseudo terminal failed") {
 				return
 			}
 			//so.Emit("data", buffString())
 		})
 		so.On("disconnect", func() {
 			log.Debug("ServerInit", "on disconnect")
-			session.Close()
-
 			so.Emit("disconnect")
 		})
 		//so.On("key", func(key string) {

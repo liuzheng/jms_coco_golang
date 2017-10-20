@@ -138,9 +138,10 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	// Okay, we're handling this as a regular session
 	sesschan, sessReqs, err := newChannel.Accept()
-	if err != nil {
+	if log.HandleErr("SessionForward", err, "Session Error") {
 		return
 	}
+	defer sesschan.Close()
 
 	stderr := sesschan.Stderr()
 
@@ -148,7 +149,6 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 	switch len(session.Machines) {
 	case 0:
 		fmt.Fprintln(stderr, "User has no permitted remote hosts.")
-		sesschan.Close()
 		return
 	case 1:
 		remote = session.Machines[0]
@@ -160,7 +160,6 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 			remote, err = s.Interactive(comm, session)
 		}
 		if err != nil {
-			sesschan.Close()
 			return
 		}
 	}
@@ -169,13 +168,12 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	credit, aErr := s.API.GetLoginCredit(remote.Sid, remote.Users[0].Uid)
 	if aErr.GetCode() != 200 {
-		log.Error("SessionForward", "GetLoginCredit : %v", err)
+		log.HandleErr("SessionForward", err, "GetLoginCredit Wrong")
 	}
 	log.Debug("SessionForward", "%v", credit.PrivateKey)
 	connect, err := client.New(remote, credit)
 	if err != nil {
 		fmt.Fprintf(stderr, "Connect failed: %v\r\n", err)
-		sesschan.Close()
 		return
 	}
 
@@ -208,9 +206,8 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 
 	// Forward the session channel
 	channel2, reqs2, err := connect.Client.OpenChannel("session", []byte{})
-	if err != nil {
+	if log.HandleErr("OpenChannel", err, "Remote session setup failed") {
 		fmt.Fprintf(stderr, "Remote session setup failed: %v\r\n", err)
-		sesschan.Close()
 		return
 	}
 
@@ -225,5 +222,5 @@ func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, cha
 		}
 	}()
 	proxy(maskedReqs, reqs2, sesschan, channel2)
-
+	return
 }
