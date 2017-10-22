@@ -1,6 +1,10 @@
 hash: b839dca6a0712c085961479b41945bd22064dfb5da0b0c6d303dda7f000811bf
-updated: 2017-10-14T17:20:34.458351642+08:00
+updated: 2017-10-22T09:14:21.02225787+08:00
 imports:
+- name: github.com/andrew-d/go-termutil
+  version: 009166a695a2f516c749a26b4ac1f183d89aa336
+- name: github.com/armon/go-socks5
+  version: e75332964ef517daa070d7c38a9466a0d687e0a5
 - name: github.com/googollee/go-engine.io
   version: 80ae0e43aca17b4c5a6834999d0f2eaa16b9afda
   subpackages:
@@ -12,21 +16,40 @@ imports:
 - name: github.com/googollee/go-socket.io
   version: 5447e71f36d394766bf855d5714a487596809f0d
 - name: github.com/gorilla/websocket
-  version: 71fa72d4842364bc5f74185f4161e0099ea3624a
+  version: 4873052237e4eeda85cf50c071ef33836fe8e139
+- name: github.com/jpillora/ansi
+  version: f496b27cd669dffb23ce87577824f749f6a8dae9
+- name: github.com/jpillora/backoff
+  version: 8eab2debe79d12b7bd3d10653910df25fa9552ba
+- name: github.com/jpillora/chisel
+  version: ef4bd3df29f9a8a8578eb345ff5edf0658af0cc8
+  subpackages:
+  - client
+  - server
+  - share
+- name: github.com/jpillora/requestlog
+  version: 86703d0d0f95a393137e71e94606c2a8c04e8c4f
+- name: github.com/jpillora/sizestr
+  version: e2ea2fa42fb952f895ab2029f26d3a73b0d56eb3
 - name: github.com/liuzheng712/golog
-  version: 9bd20b553d2c0cadafe5960665b777975f94f332
+  version: e3a6ba0392cdc06ffd1cd86f0d8eebe6465a2a59
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9
 - name: golang.org/x/crypto
-  version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
+  version: edd5e9b0879d13ee6970a50153d85b8fec9f7686
   subpackages:
   - curve25519
   - ed25519
   - ed25519/internal/edwards25519
   - ssh
   - ssh/terminal
+- name: golang.org/x/net
+  version: d58ca6618b994150e624f6888d871f4709db51a0
+  subpackages:
+  - context
 - name: golang.org/x/sys
-  version: 5ebad5b16dbc66cbaef4f6d31ee0b91d9b49567a
+  version: 76cc09b634294339fa19ec41b5f2a0b3932cea8b
   subpackages:
   - unix
+  - windows
 testImports: []

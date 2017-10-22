@@ -29,7 +29,7 @@ var Panic = golog.Panic
 var Fatal = golog.Fatal
 
 func HandleErr(name string, err ... interface{}) bool {
-	if err != nil {
+	if err != nil && err[0] != nil {
 		if len(err) > 1 {
 			// TODO: discuss if it need judge the err's type to print error's code <liuzheng712@gmail.com, xrain@simcu.com>
 			//if reflect.TypeOf(err[1]).String() == "*error.UtilErr" {
