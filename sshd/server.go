@@ -47,9 +47,11 @@ type Server struct {
 
 // HandleConn takes a net.Conn and runs it through sshmux.
 func (s *Server) HandleConn(c net.Conn) {
-	defer c.Close()
 	sshConn, chans, reqs, err := ssh.NewServerConn(c, s.sshConfig)
-	if log.HandleErr("HandleConn", err, "Network issue") {
+	if err == io.EOF {
+		log.Info("HandConn","User leave")
+		return
+	} else if log.HandleErr("HandleConn", err, "Network issue") {
 		return
 	}
 	defer sshConn.Close()
@@ -244,6 +246,7 @@ func New() *Server {
 		authFile := []byte(PublicKey.Key)
 
 		candidate, _, _, _, _ = ssh.ParseAuthorizedKey(authFile)
+		// TODO: 这里进行公钥的比对，感觉那里不对 <liuzheng712@gmail.com>
 		if t == candidate.Type() && bytes.Compare(k, candidate.Marshal()) == 0 {
 			return &user, nil
 		}
@@ -272,6 +275,7 @@ func New() *Server {
 
 	server.sshConfig = &ssh.ServerConfig{
 		PublicKeyCallback: server.auth,
+		//ServerVersion:     "coco-" + util.Version,
 	}
 	server.sshConfig.AddHostKey(signer)
 

@@ -6,6 +6,8 @@ import (
 	"coco/util/log"
 )
 
+const Version = "0.5"
+
 var (
 	Ip      = flag.String("ip", GetIp(), "对外提供服务的IP地址")
 	AppId   = flag.String("appid", "", "Jumpserver Core中添加完Coco后获得的AppId")
