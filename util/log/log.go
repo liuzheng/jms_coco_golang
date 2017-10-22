@@ -13,7 +13,7 @@ func Initial() {
 
 type Password string
 
-func (p Password) Redacted() string {
+func (p Password) Redacted() interface{} {
 	return strings.Repeat("*", len(p))
 }
 
