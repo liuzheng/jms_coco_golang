@@ -3,8 +3,8 @@ package log
 import (
 	"github.com/liuzheng712/golog"
 	"strings"
-	//"reflect"
-	//"coco/util/errors"
+	"reflect"
+	"coco/util/errors"
 )
 
 func Initial() {
@@ -32,11 +32,14 @@ func HandleErr(name string, err ... interface{}) bool {
 	if err != nil && err[0] != nil {
 		if len(err) > 1 {
 			// TODO: discuss if it need judge the err's type to print error's code <liuzheng712@gmail.com, xrain@simcu.com>
-			//if reflect.TypeOf(err[1]).String() == "*error.UtilErr" {
-			//	golog.Error(name, "%v, Code: %v", err[1], err[0].(errors.Error).GetCode())
-			//} else {
-			golog.Error(name, "%v", err[1])
-			//}
+			if reflect.TypeOf(err[0]).String() == "*errors.UtilError" {
+				if err[0].(errors.Error).GetCode() < 300 {
+					return false
+				}
+				golog.Error(name, "%v, Code: %v", err[1], err[0].(errors.Error).GetCode())
+			} else {
+				golog.Error(name, "%v", err[1])
+			}
 		} else {
 			golog.Error(name, "Error Unknow")
 		}

@@ -1,6 +1,10 @@
 package api
 
-import "coco/util/errors"
+import (
+	"coco/util/errors"
+	"coco/util/log"
+)
+
 // 用户名获取用户的 pubkey
 func (s *Server) GetUserPubKey(username string) (UserPubKey, errors.Error) {
 	data := s.CreateQueryData()
@@ -28,4 +32,17 @@ func (s *Server) CheckMonitorToken(sessionId int) (ResponsePass, errors.Error) {
 	var rd ResponsePass
 	err := s.Query(s.Action.CheckMonitorToken, data, &rd)
 	return rd, err
+}
+
+func (s *Server) Login(username string) bool {
+	up, err := s.GetUserPubKey(username)
+	if log.HandleErr("Login", err, "login issue") {
+		return false
+	}
+	_, err = s.GetLoginToken(username, up.Ticket)
+	if log.HandleErr("Login", err, "login issue") {
+		return false
+	}
+	return true
+
 }

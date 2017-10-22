@@ -135,7 +135,9 @@ func HostKeyCallback(hostID string, remote net.Addr, key ssh.PublicKey) error {
 // interactive remote host selection if necessary. This forwarding type
 // requires agent forwarding in order to work.
 func (s *Server) SessionForward(session *Session, newChannel ssh.NewChannel, chans <-chan ssh.NewChannel) {
-
+	if !s.API.Login(session.User.Name) {
+		return
+	}
 	// Okay, we're handling this as a regular session
 	sesschan, sessReqs, err := newChannel.Accept()
 	if log.HandleErr("SessionForward", err, "Session Error") {

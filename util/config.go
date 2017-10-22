@@ -6,7 +6,7 @@ import (
 	"coco/util/log"
 )
 
-const Version = "0.5"
+const Version = "coco-0.5"
 
 var (
 	Ip      = flag.String("ip", GetIp(), "对外提供服务的IP地址")
