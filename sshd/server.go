@@ -43,7 +43,7 @@ type Server struct {
 	// bailout.
 	//Selected  func(*Session, string) error
 	sshConfig *ssh.ServerConfig
-	API       *api.Server
+	//API       *api.Server
 }
 
 // HandleConn takes a net.Conn and runs it through sshmux.
@@ -287,7 +287,7 @@ func New() *Server {
 	server := &Server{
 		Auther: auth,
 		Setup:  setup,
-		API:    api.New(),
+		//API:    api.New(),
 	}
 
 	server.sshConfig = &ssh.ServerConfig{
