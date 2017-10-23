@@ -248,7 +248,7 @@ func New() *Server {
 		user = &User{Name: c.User()}
 
 		PublicKey, autherr := as.GetUserPubKey(c.User())
-		if log.HandleErr("sshd auth", err) {
+		if log.HandleErr("sshd auth", autherr) {
 			return nil, autherr
 		}
 		authFile := []byte(PublicKey.Key)
@@ -256,7 +256,7 @@ func New() *Server {
 
 		candidate, _, _, _, _ = ssh.ParseAuthorizedKey(authFile)
 		if t == candidate.Type() && bytes.Compare(k, candidate.Marshal()) == 0 {
-			return
+			return user, nil
 		}
 
 		log.Warn("sshd auth", "%s: access denied (username: %s)", c.RemoteAddr(), c.User())
