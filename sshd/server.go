@@ -248,7 +248,7 @@ func New() *Server {
 		user = &User{Name: c.User()}
 
 		PublicKey, autherr := as.GetUserPubKey(c.User())
-		if log.HandleErr("sshd auth", autherr) {
+		if log.HandleErr("sshd auth", autherr, autherr.Error()) {
 			return nil, autherr
 		}
 		authFile := []byte(PublicKey.Key)
