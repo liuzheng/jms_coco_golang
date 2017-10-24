@@ -203,10 +203,11 @@ func (m *Manue) GetHelp() {
 
 // 获取主机组列表
 func (m *Manue) GetHostGroupList(id string) {
+	log.Debug("Menu GetHostGroupList", "%v", id)
 
 }
 
 // 搜索主机
 func (m *Manue) Search(q string) {
-
+	log.Debug("Menu Search", "%v", q)
 }
