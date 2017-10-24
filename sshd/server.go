@@ -15,7 +15,7 @@ import (
 	"coco/util/errors"
 )
 
-// Server is the sshmux server instance.
+// Server is the coco server instance.
 type Server struct {
 	// Auther checks if a connection is permitted, and returns a user if
 	// recognized.. Returning nil error indicates that the login was allowed,
@@ -42,10 +42,9 @@ type Server struct {
 	// bailout.
 	//Selected  func(*Session, string) error
 	sshConfig   *ssh.ServerConfig
-	//API       *api.Server
 }
 
-// HandleConn takes a net.Conn and runs it through sshmux.
+// HandleConn takes a net.Conn and runs it through coco.
 func (s *Server) HandleConn(c net.Conn) {
 	sshConn, chans, reqs, err := ssh.NewServerConn(c, s.sshConfig)
 	if err == io.EOF {
@@ -62,7 +61,6 @@ func (s *Server) HandleConn(c net.Conn) {
 	log.Debug("HandleConn", "%v", sshConn.Permissions)
 
 	ext := sshConn.Permissions.Extensions
-	//pk, _ := s.API.GetUserPubKey(sshConn.User())
 	pk := &publicKey{
 		publicKey:     []byte(ext["pubKey"]),
 		publicKeyType: ext["pubKeyType"],
@@ -103,7 +101,7 @@ func (s *Server) HandleConn(c net.Conn) {
 	case "direct-tcpip":
 		s.ChannelForward(session, newChannel)
 	default:
-		newChannel.Reject(ssh.UnknownChannelType, "connection flow not supported by sshmux")
+		newChannel.Reject(ssh.UnknownChannelType, "connection flow not supported by coco")
 	}
 	return
 }
@@ -201,7 +199,6 @@ func New() *Server {
 	server := &Server{
 		Auther: auth,
 		Setup:  setup,
-		//API:    api.New(),
 	}
 
 	server.sshConfig = &ssh.ServerConfig{

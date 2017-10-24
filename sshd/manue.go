@@ -89,6 +89,7 @@ func (m *Manue) Manager() {
 	return
 }
 
+// Command: got the command user input, just the Opt menu
 func (m *Manue) Command() (command string, err errors.Error) {
 	fmt.Fprint(m.Conn, "\r\nOpt>")
 	var left, right []byte
@@ -127,37 +128,34 @@ func (m *Manue) Command() (command string, err errors.Error) {
 					fmt.Fprintf(m.Conn, "%s", []byte{27, 91, 68})
 				}
 			case bytes.Compare([]byte{27, 91, 65}, b) == 0: // 方向键(↑)
-				log.Debug("Opt loop", "方向键(↑)")
+				log.Debug("Menu Command", "方向键(↑)")
 			case bytes.Compare([]byte{27, 91, 66}, b) == 0: // 方向键(↓)
-				log.Debug("Opt loop", "方向键(↓)")
+				log.Debug("Menu Command", "方向键(↓)")
 			case bytes.Compare([]byte{27, 91, 67}, b) == 0: // 方向键(→)
-				log.Debug("Opt loop", "方向键(→)")
+				log.Debug("Menu Command", "方向键(→)")
 				if len(right) > 0 {
 					fmt.Fprintf(m.Conn, "%s", b)
 					left = append(left, right[0])
 					right = right[1:]
 				}
 			case bytes.Compare([]byte{27, 91, 68}, b) == 0: // 方向键(←)
-				log.Debug("Opt loop", "方向键(←)")
+				log.Debug("Menu Command", "方向键(←)")
 				if len(left) > 0 {
 					fmt.Fprintf(m.Conn, "%s", b)
 					right = append([]byte{left[len(left)-1]}, right...)
 					left = left[:len(left)-1]
 				}
 			case bytes.Compare([]byte{27, 0, 0}, b) == 0: // esc
-				log.Debug("Opt loop", "ESC")
+				log.Debug("Menu Command", "ESC")
 			default:
-				//fmt.Fprint(conn, "\b \b")
 				fmt.Fprintf(m.Conn, "%s", "")
-
 				continue
-				//fmt.Fprintf(conn, "%s", b)
 			}
 			if 0x1b != b[0] {
 				left = append(left, b[0])
 			}
 			b = make([]byte, 3)
-			log.Debug("Opt loop", " %v %v", left, right)
+			log.Debug("Menu Command", " %v %v", left, right)
 		}
 	}
 }
