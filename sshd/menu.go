@@ -56,12 +56,12 @@ func (m *Menu) Manager() {
 			case "G":
 				// 输入 G/g 显示您有权限的主机组.
 				m.GetHostGroup()
-				//case "E":
-				////  输入 E/e 批量执行命令.(未完成)
-				//case "U":
-				////  输入 U/u 批量上传文件.(未完成)
-				//case "D":
-				////  输入 D/d 批量下载文件.(未完成)
+			//case "E":
+			////  输入 E/e 批量执行命令.(未完成)
+			//case "U":
+			////  输入 U/u 批量上传文件.(未完成)
+			//case "D":
+			////  输入 D/d 批量下载文件.(未完成)
 			case "H":
 				//  输入 H/h 帮助.
 				m.GetHelp()
@@ -81,8 +81,12 @@ func (m *Menu) Manager() {
 			case "G":
 				//  输入 G/g + 组ID 显示该组下主机. 如: g1
 				m.GetHostGroupList(command[1:])
+			case "E":
+				if "Exit" == command {
+					return
+				}
 			default:
-				// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
+			// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
 			}
 		}
 	}
@@ -99,7 +103,7 @@ func (m *Menu) Command() (command string, err errors.Error) {
 		if err != nil {
 			log.Error("Server", "%v", err)
 			fmt.Fprint(m.Conn, "^D")
-			fmt.Fprint(m.Conn, "\r\nGoodbye\r\n")
+			fmt.Fprint(m.Conn, "\r\nGoodbye")
 			return "Exit", nil
 		}
 		if n >= 0 {
@@ -111,11 +115,11 @@ func (m *Menu) Command() (command string, err errors.Error) {
 				fmt.Fprint(m.Conn, "^C")
 				return "", nil
 			case 0x04 == b[0]: // ctrl-d
-				fmt.Fprint(m.Conn, "^D\r\nGoodbye\r\n")
+				fmt.Fprint(m.Conn, "^D\r\nGoodbye")
 				return "Exit", nil
 			case 0x7f == b[0] || 0x08 == b[0]: // delete or backspace
 				if l := len(left); l > 0 {
-					left = left[:l-1]
+					left = left[:l - 1]
 					fmt.Fprintf(m.Conn, "\b \b%s ", string(right))
 					for i := -1; i < len(right); i++ {
 						fmt.Fprintf(m.Conn, "%s", []byte{27, 91, 68})
@@ -142,8 +146,8 @@ func (m *Menu) Command() (command string, err errors.Error) {
 				log.Debug("Menu Command", "方向键(←)")
 				if len(left) > 0 {
 					fmt.Fprintf(m.Conn, "%s", b)
-					right = append([]byte{left[len(left)-1]}, right...)
-					left = left[:len(left)-1]
+					right = append([]byte{left[len(left) - 1]}, right...)
+					left = left[:len(left) - 1]
 				}
 			case bytes.Compare([]byte{27, 0, 0}, b) == 0: // esc
 				log.Debug("Menu Command", "ESC")
@@ -168,13 +172,12 @@ func (m *Menu) Welcome() {
 
 // 获取主机列表
 func (m *Menu) GetMachineList() {
-	count := 0
 	remotes := []api.Machine{}
 	format := "[%-4d]\t%-16s\t%-5d\t%s\t%s\t%s\r\n"
 	fmt.Fprintf(m.Conn, "[%-4s]\t%-16s\t%-5s\t%s\t%s\t%s\r\n", "ID", "IP", "Port", "Hostname", "Username", "Comment")
 	for _, v := range m.Session.Machines {
 		for _, u := range v.Users {
-			fmt.Fprintf(m.Conn, format, count, v.Ip, v.Port, "hostname", u.Username, v.Remark)
+			fmt.Fprintf(m.Conn, format, v.Sid, v.Ip, v.Port, "hostname", u.Username, v.Remark)
 			remotes = append(remotes, api.Machine{
 				Ip:     v.Ip,
 				Port:   v.Port,
@@ -183,7 +186,6 @@ func (m *Menu) GetMachineList() {
 				Remark: v.Remark,
 				Users:  []api.MachineUser{u},
 			})
-			count++
 		}
 	}
 
