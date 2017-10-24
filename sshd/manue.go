@@ -117,9 +117,12 @@ loop:
 					break loop
 					//return api.Machine{}, errors.New("user terminated session")
 				case 0x7f == b[0] || 0x08 == b[0]: // delete or backspace
-					if l := len(buf); l > 0 {
-						buf = buf[:l-1]
-						fmt.Fprint(m.Conn, "\b \b")
+					if l := len(left); l > 0 {
+						left = left[:l-1]
+						fmt.Fprintf(m.Conn, "\b \b%s ", string(right))
+						for i := -1; i < len(right); i++ {
+							fmt.Fprintf(m.Conn, "%s", []byte{27, 91, 68})
+						}
 					}
 					continue
 				case 0x20 <= b[0] && b[0] <= 0x7E:
