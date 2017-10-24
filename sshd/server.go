@@ -12,7 +12,6 @@ import (
 	"coco/api"
 	"coco/util"
 	"fmt"
-	"strings"
 	"coco/util/errors"
 )
 
@@ -100,109 +99,7 @@ func (s *Server) HandleConn(c net.Conn) {
 		}
 
 		menu.Welcome()
-		loop:
-		for {
-			fmt.Fprint(conn, "\r\nOpt>")
-			var buf []byte
-			b := make([]byte, 1)
-			for {
-				n, err := conn.Read(b)
-				if err != nil {
-					log.Error("Server", "%v", err)
-					fmt.Fprint(conn, "^D")
-					fmt.Fprint(conn, "\r\nGoodbye\r\n")
-					break loop
-				}
-				if n >= 0 {
-					switch {
-					case 0x0A == b[0] || 0x0D == b[0]: // 换行键 or 回车键
-						if len(buf) == 1 {
-							fmt.Fprint(conn, "\r\n")
-							switch strings.ToUpper(string(buf[0])) {
-							case "P":
-								// 输入 P/p 显示您有权限的主机.
-								menu.GetMachineList()
-							case "G":
-								// 输入 G/g 显示您有权限的主机组.
-								menu.GetHostGroup()
-							//case "E":
-							////  输入 E/e 批量执行命令.(未完成)
-							//case "U":
-							////  输入 U/u 批量上传文件.(未完成)
-							//case "D":
-							////  输入 D/d 批量下载文件.(未完成)
-							case "H":
-								//  输入 H/h 帮助.
-								menu.GetHelp()
-							case "Q":
-								//  输入 Q/q 退出.
-								fmt.Fprint(conn, "Goodbye\r\n")
-								break loop
-							default:
-								fmt.Fprint(conn, "TO BE CONTINUED")
-							}
-						} else if len(buf) > 1 {
-							fmt.Fprint(conn, "\r\n")
-							switch strings.ToUpper(string(buf[0])) {
-							case "/":
-								// 输入 / + IP, 主机名 or 备注 搜索. 如: /ip
-								menu.Search(string(buf[1:]))
-							case "G":
-								//  输入 G/g + 组ID 显示该组下主机. 如: g1
-								menu.GetHostGroupList(string(buf[1:]))
-							default:
-							// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
-
-							}
-						}
-						continue loop
-					//res, err := strconv.ParseInt(string(buf), 10, 64)
-					//if log.HandleErr("DefaultInteractive", err) {
-					//	fmt.Fprint(conn, "input not a valid integer. Please try again")
-					//	continue loop
-					//}
-					//if int(res) >= 2 || res < 0 {
-					//	fmt.Fprint(conn, "No such server. Please try again")
-					//	continue loop
-					//}
-					//return remotes[int(res)], nil
-					case 0x03 == b[0]: // ctrl-c
-						fmt.Fprint(conn, "^C")
-						continue loop
-					case 0x04 == b[0]: // ctrl-d
-						fmt.Fprint(conn, "^D\r\nGoodbye\r\n")
-						break loop
-					//return api.Machine{}, errors.New("user terminated session")
-					case 0x7f == b[0] || 0x08 == b[0]: // delete or backspace
-						if l := len(buf); l > 0 {
-							buf = buf[:l - 1]
-							fmt.Fprint(conn, "\b \b")
-						}
-						continue
-					case 0x20 <= b[0] && b[0] <= 0x7E:
-						fmt.Fprintf(conn, "%s", b)
-					case 0x17 == b[0]://  方向键(←)
-						log.Debug("Opt loop", "方向键(←)")
-					case 0x38 == b[0]://  方向键(↑)
-						log.Debug("Opt loop", "方向键(↑)")
-
-					case 0x39 == b[0]://  方向键(→)
-						log.Debug("Opt loop", "方向键(→)")
-					case 0x40 == b[0]://  方向键(↓)
-						log.Debug("Opt loop", "方向键(↓)")
-					default:
-						log.Debug("Opt loop", "don't know key %v", b)
-						//fmt.Fprint(conn, "\b \b")
-						fmt.Fprintf(conn, "%s", "")
-
-						continue
-					//fmt.Fprintf(conn, "%s", b)
-					}
-					buf = append(buf, b[0])
-					log.Debug("Opt loop", "buf %v", buf)
-				}
-			}
-		}
+		menu.Manager()
 	case "direct-tcpip":
 		s.ChannelForward(session, newChannel)
 	default:
