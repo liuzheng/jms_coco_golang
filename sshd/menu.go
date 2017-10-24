@@ -6,7 +6,7 @@ import (
 	"coco/util/errors"
 )
 
-type Manue struct {
+type Menu struct {
 	Conn    rw
 	Session *Session
 	API     *api.Server
@@ -27,23 +27,23 @@ var (
 	}
 )
 // 初始化menu
-func NewMenu(conn rw, session *Session) (manue Manue, err error) {
+func NewMenu(conn rw, session *Session) (menu Menu, err error) {
 	as := api.New()
 	if !as.Login(session.User.Name) {
-		return Manue{}, errors.New("Login fail", 403)
+		return Menu{}, errors.New("Login fail", 403)
 	}
-	manue = Manue{Conn: conn, Session: session, API: as}
+	menu = Menu{Conn: conn, Session: session, API: as}
 	return
 }
 
 // 欢迎页
-func (m *Manue) Welcome() {
+func (m *Menu) Welcome() {
 	fmt.Fprintf(m.Conn, "\033[1;32m  %s, 欢迎使用Jumpserver开源跳板机系统  \033[0m\r\n", m.Session.Conn.User())
 	m.GetHelp()
 }
 
 // 获取主机列表
-func (m *Manue) GetMachineList() {
+func (m *Menu) GetMachineList() {
 	count := 0
 	remotes := []api.Machine{}
 	format := "[%-4d]\t%-16s\t%-5d\t%s\t%s\t%s\r\n"
@@ -66,23 +66,23 @@ func (m *Manue) GetMachineList() {
 }
 
 // 获取主机组内主机列表
-func (m *Manue) GetHostGroup() {
+func (m *Menu) GetHostGroup() {
 
 }
 
 // 帮助页
-func (m *Manue) GetHelp() {
+func (m *Menu) GetHelp() {
 	for k, v := range help {
 		fmt.Fprintf(m.Conn, "    %d) %s\r\n", k, v)
 	}
 }
 
 // 获取主机组列表
-func (m *Manue) GetHostGroupList(id string) {
+func (m *Menu) GetHostGroupList(id string) {
 
 }
 
 // 搜索主机
-func (m *Manue) Search(q string) {
+func (m *Menu) Search(q string) {
 
 }
