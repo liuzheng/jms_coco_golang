@@ -4,7 +4,7 @@ package api
 type Server struct {
 	Url     string
 	AppId   string
-	AppKey  string
+	appKey  string
 	WsPort  int
 	SshPort int
 	Ip      string

@@ -15,7 +15,7 @@ func New() *Server {
 	server := Server{
 		Url:     *util.JmsUrl,
 		AppId:   *util.AppId,
-		AppKey:  *util.AppKey,
+		appKey:  *util.AppKey,
 		Ip:      *util.Ip,
 		WsPort:  *util.WsPort,
 		SshPort: *util.SshPort,
