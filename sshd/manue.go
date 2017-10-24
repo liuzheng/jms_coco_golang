@@ -123,7 +123,10 @@ loop:
 					}
 					continue
 				case 0x20 <= b[0] && b[0] <= 0x7E:
-					fmt.Fprintf(m.Conn, "%s", b)
+					fmt.Fprintf(m.Conn, "%s%s", b, string(right))
+					for i := 0; i < len(right); i++ {
+						fmt.Fprintf(m.Conn, "%s", []byte{27, 91, 68})
+					}
 				case bytes.Compare([]byte{27, 91, 65}, b) == 0: // 方向键(↑)
 					log.Debug("Opt loop", "方向键(↑)")
 				case bytes.Compare([]byte{27, 91, 66}, b) == 0: // 方向键(↓)
