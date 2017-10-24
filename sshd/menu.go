@@ -6,13 +6,15 @@ import (
 	"coco/api"
 	"coco/util/errors"
 	"coco/util/log"
-	"bytes"
+	"golang.org/x/crypto/ssh/terminal"
+	"io"
 )
 
 type Menu struct {
 	Conn    rw
 	Session *Session
 	API     *api.Server
+	Term    *terminal.Terminal
 }
 
 var (
@@ -35,15 +37,19 @@ func NewMenu(conn rw, session *Session) (menu Menu, err error) {
 	if !as.Login(session.User.Name) {
 		return Menu{}, errors.New("Login fail", 403)
 	}
-	menu = Menu{Conn: conn, Session: session, API: as}
+	menu = Menu{Conn: conn, Session: session, API: as, Term:terminal.NewTerminal(conn, "Opt> ")}
+	//menu.Term.SetSize(140, 40)
 	return
 }
 
 // Menu manager
 func (m *Menu) Manager() {
+	defer fmt.Fprint(m.Conn, "Goodbye\r\n")
 	for {
-		command, err := m.Command()
-		if log.HandleErr("Menu Manager", err, "logout") {
+		command, err := m.Term.ReadLine()
+		if err == io.EOF {
+			return
+		} else if log.HandleErr("Menu Manager", err, "logout") {
 			return
 		}
 		log.Debug("Menu Manager", "the command is: %s", command)
@@ -67,7 +73,6 @@ func (m *Menu) Manager() {
 				m.GetHelp()
 			case "Q":
 				//  输入 Q/q 退出.
-				fmt.Fprint(m.Conn, "Goodbye\r\n")
 				return
 			default:
 				fmt.Fprint(m.Conn, "TO BE CONTINUED")
@@ -82,7 +87,7 @@ func (m *Menu) Manager() {
 				//  输入 G/g + 组ID 显示该组下主机. 如: g1
 				m.GetHostGroupList(command[1:])
 			case "E":
-				if "Exit" == command {
+				if "xit" == command[1:] {
 					return
 				}
 			default:
@@ -91,77 +96,6 @@ func (m *Menu) Manager() {
 		}
 	}
 	return
-}
-
-// Command: got the command user input, just the Opt menu
-func (m *Menu) Command() (command string, err errors.Error) {
-	fmt.Fprint(m.Conn, "\r\nOpt>")
-	var left, right []byte
-	b := make([]byte, 3)
-	for {
-		n, err := m.Conn.Read(b)
-		if err != nil {
-			log.Error("Server", "%v", err)
-			fmt.Fprint(m.Conn, "^D")
-			fmt.Fprint(m.Conn, "\r\nGoodbye")
-			return "Exit", nil
-		}
-		if n >= 0 {
-			log.Debug("Opt loop", "the key %v", b)
-			switch {
-			case 0x0A == b[0] || 0x0D == b[0]: // 换行键 or 回车键
-				return string(append(left, right...)), nil
-			case 0x03 == b[0]: // ctrl-c
-				fmt.Fprint(m.Conn, "^C")
-				return "", nil
-			case 0x04 == b[0]: // ctrl-d
-				fmt.Fprint(m.Conn, "^D\r\nGoodbye")
-				return "Exit", nil
-			case 0x7f == b[0] || 0x08 == b[0]: // delete or backspace
-				if l := len(left); l > 0 {
-					left = left[:l - 1]
-					fmt.Fprintf(m.Conn, "\b \b%s ", string(right))
-					for i := -1; i < len(right); i++ {
-						fmt.Fprintf(m.Conn, "%s", []byte{27, 91, 68})
-					}
-				}
-				continue
-			case 0x20 <= b[0] && b[0] <= 0x7E:
-				fmt.Fprintf(m.Conn, "%s%s", b, string(right))
-				for i := 0; i < len(right); i++ {
-					fmt.Fprintf(m.Conn, "%s", []byte{27, 91, 68})
-				}
-			case bytes.Compare([]byte{27, 91, 65}, b) == 0: // 方向键(↑)
-				log.Debug("Menu Command", "方向键(↑)")
-			case bytes.Compare([]byte{27, 91, 66}, b) == 0: // 方向键(↓)
-				log.Debug("Menu Command", "方向键(↓)")
-			case bytes.Compare([]byte{27, 91, 67}, b) == 0: // 方向键(→)
-				log.Debug("Menu Command", "方向键(→)")
-				if len(right) > 0 {
-					fmt.Fprintf(m.Conn, "%s", b)
-					left = append(left, right[0])
-					right = right[1:]
-				}
-			case bytes.Compare([]byte{27, 91, 68}, b) == 0: // 方向键(←)
-				log.Debug("Menu Command", "方向键(←)")
-				if len(left) > 0 {
-					fmt.Fprintf(m.Conn, "%s", b)
-					right = append([]byte{left[len(left) - 1]}, right...)
-					left = left[:len(left) - 1]
-				}
-			case bytes.Compare([]byte{27, 0, 0}, b) == 0: // esc
-				log.Debug("Menu Command", "ESC")
-			default:
-				fmt.Fprintf(m.Conn, "%s", "")
-				continue
-			}
-			if 0x1b != b[0] {
-				left = append(left, b[0])
-			}
-			b = make([]byte, 3)
-			log.Debug("Menu Command", " %v %v", left, right)
-		}
-	}
 }
 
 // 欢迎页
