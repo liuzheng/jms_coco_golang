@@ -54,7 +54,6 @@ func (m *Menu) Manager() {
 		}
 		log.Debug("Menu Manager", "the command is: %s", command)
 		if len(command) == 1 {
-			fmt.Fprint(m.Conn, "\r\n")
 			switch strings.ToUpper(string(command[0])) {
 			case "P":
 				// 输入 P/p 显示您有权限的主机.
@@ -75,10 +74,9 @@ func (m *Menu) Manager() {
 				//  输入 Q/q 退出.
 				return
 			default:
-				fmt.Fprint(m.Conn, "TO BE CONTINUED")
+				fmt.Fprint(m.Conn, "TO BE CONTINUED\r\n")
 			}
 		} else if len(command) > 1 {
-			fmt.Fprint(m.Conn, "\r\n")
 			switch strings.ToUpper(string(command[0])) {
 			case "/":
 				// 输入 / + IP, 主机名 or 备注 搜索. 如: /ip
