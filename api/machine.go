@@ -20,7 +20,7 @@ func (s *Server) GetLoginCredit(serverId, userId int) (LoginCredit, errors.Error
 }
 
 //获取服务器组
-func (s *Server) GetGroupList() ([]MachineGroup, error) {
+func (s *Server) GetGroupList() ([]MachineGroup, errors.Error) {
 	data := s.CreateQueryData()
 	var rd []MachineGroup
 	err := s.Query(s.Action.GetMachineGroupList, data, &rd)

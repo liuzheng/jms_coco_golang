@@ -34,15 +34,11 @@ var (
 	}
 )
 // 初始化menu
-func NewMenu(conn rw, session *Session) (menu Menu, err error) {
-	as := api.New()
-	if !as.Login(session.User.Name) {
-		return Menu{}, errors.New("Login fail", 403)
-	}
+func NewMenu(conn rw, session *Session) (menu Menu, err errors.Error) {
 	menu = Menu{
 		Conn:    conn,
 		Session: session,
-		api:     as,
+		api:     session.User.Api,
 		term:    terminal.NewTerminal(conn, "Opt[0]> "),
 		gid:     0}
 	//menu.term.SetSize(140, 40)
@@ -112,7 +108,7 @@ func (m *Menu) Welcome() {
 }
 
 // 获取主机组列表
-func (m *Menu) GetHostGroups() (err error) {
+func (m *Menu) GetHostGroups() (err errors.Error) {
 	MachineGroup, err := m.api.GetGroupList()
 	if log.HandleErr("GetHostGroup", err, "") {
 		return err
@@ -135,7 +131,7 @@ func (m *Menu) GetHelp() {
 }
 
 // 获取主机组列表
-func (m *Menu) GetHostGroupList() (err error) {
+func (m *Menu) GetHostGroupList() (err errors.Error) {
 	Machine, errs := m.api.GetList("", m.gid)
 	if log.HandleErr("GetHostGroupList", errs, "") {
 		return errs
@@ -146,7 +142,7 @@ func (m *Menu) GetHostGroupList() (err error) {
 }
 
 // 搜索主机
-func (m *Menu) Search(q string) (err error) {
+func (m *Menu) Search(q string) (err errors.Error) {
 	log.Debug("Menu Search", "%v", q)
 	m.Session.Machines, err = m.api.GetList(q, m.gid)
 	if log.HandleErr("GetMachineList", err, "") {
