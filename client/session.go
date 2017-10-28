@@ -21,7 +21,9 @@ type windowDimensionChangeMsg struct {
 // 新建会话
 func (c *Client) NewSession() (session *Session, erro errors.Error) {
 	var err error
-	session.Client = c
+	session=&Session{
+		Client:c,
+	}
 	session.Session, err = c.Client.NewSession()
 	if err != nil {
 		panic("Failed to create session: " + err.Error())

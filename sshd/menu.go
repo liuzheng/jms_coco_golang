@@ -6,9 +6,11 @@ import (
 	"coco/api"
 	"coco/util/errors"
 	"coco/util/log"
+	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"strconv"
+	"coco/client"
 )
 
 type Menu struct {
@@ -26,9 +28,9 @@ var (
 		"输入 \033[32mP/p\033[0m 显示您有权限的主机.",
 		"输入 \033[32mG/g\033[0m 显示您有权限的主机组.",
 		"输入 \033[32mG/g\033[0m\033[0m + \033[32m组ID\033[0m 显示该组下主机. 如: g1",
-		"输入 \033[32mE/e\033[0m 批量执行命令.(未完成)", //TODO: 暂时不管这个功能
-		"输入 \033[32mU/u\033[0m 批量上传文件.(未完成)", //TODO: 暂时不管这个功能
-		"输入 \033[32mD/d\033[0m 批量下载文件.(未完成)", //TODO: 暂时不管这个功能
+		"输入 \033[32mE/e\033[0m 批量执行命令.(未完成)", // TODO: 暂时不管这个功能
+		"输入 \033[32mU/u\033[0m 批量上传文件.(未完成)", // TODO: 暂时不管这个功能
+		"输入 \033[32mD/d\033[0m 批量下载文件.(未完成)", // TODO: 暂时不管这个功能
 		"输入 \033[32mH/h\033[0m 帮助.",
 		"输入 \033[32mQ/q\033[0m 退出.",
 	}
@@ -57,6 +59,7 @@ func (m *Menu) Manager() {
 		}
 		log.Debug("Menu Manager", "the command is: %s", command)
 		if len(command) == 1 {
+			// One letter command
 			switch strings.ToUpper(string(command[0])) {
 			case "P":
 				// 输入 P/p 显示您有权限的主机.
@@ -64,22 +67,26 @@ func (m *Menu) Manager() {
 			case "G":
 				// 输入 G/g 显示您有权限的主机组.
 				m.GetHostGroups()
-				//case "E":
-				////  输入 E/e 批量执行命令.(未完成)
-				//case "U":
-				////  输入 U/u 批量上传文件.(未完成)
-				//case "D":
-				////  输入 D/d 批量下载文件.(未完成)
+			//case "E":
+			////  输入 E/e 批量执行命令.(未完成)
+			//case "U":
+			////  输入 U/u 批量上传文件.(未完成)
+			//case "D":
+			////  输入 D/d 批量下载文件.(未完成)
 			case "H":
 				//  输入 H/h 帮助.
 				m.GetHelp()
 			case "Q":
 				//  输入 Q/q 退出.
 				return
+			case "T":
+				// Test for connect
+				m.connectMachine(m.Session.Machines[0], m.Session.Machines[0].Users[0].Uid)
 			default:
 				fmt.Fprint(m.Conn, "TO BE CONTINUED\r\n")
 			}
 		} else if len(command) > 1 {
+			// Multi letters command
 			switch strings.ToUpper(string(command[0])) {
 			case "/":
 				// 输入 / + IP, 主机名 or 备注 搜索. 如: /ip
@@ -93,8 +100,12 @@ func (m *Menu) Manager() {
 				if "xit" == command[1:] {
 					return
 				}
+			case "V":
+				if "sion" == command[1:] {
+					fmt.Fprint(m.Conn, "version is \r\n")
+				}
 			default:
-				// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
+			// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
 			}
 		}
 	}
@@ -169,4 +180,51 @@ func (m *Menu) printMachines(Machines []api.Machine) {
 		}
 	}
 	return
+}
+
+func (m *Menu) connectMachine(host api.Machine, userId int) {
+	buf := make([]byte, 10240)
+
+	// TODO: move this modes set to some where
+	modes := ssh.TerminalModes{
+		ssh.ECHO:          1,
+		ssh.TTY_OP_ISPEED: 14400,
+		ssh.TTY_OP_OSPEED: 14400,
+	}
+
+	credit, err := m.api.GetLoginCredit(host.Sid, userId)
+	if log.HandleErr("connectMachine", err, "GetLoginCredit Error") {
+
+	}
+	connect, err := client.New(host, credit)
+	if log.HandleErr("connectMachine", err, "client.New Error") {
+
+	}
+	defer connect.Close()
+	session, err := connect.NewSession()
+	if log.HandleErr("connectMachine", err, "NewSession error") {
+		return
+	}
+	defer session.Close()
+	session.Session.Stdin = m.Conn.Reader
+
+	soout, _ := session.Session.StdoutPipe()
+	if err := session.Session.RequestPty("xterm", 24, 80, modes); log.HandleErr("ServerInit", err, "1request for pseudo terminal failed") {
+		return
+	}
+	if log.HandleErr("ServerInit", session.Session.Shell(), "执行Shell出错") {
+		return
+	}
+
+	for {
+		n, err := soout.Read(buf)
+		if err == io.EOF {
+			log.Info("ServerInit", "websocket is disconnected")
+			break
+		}
+		if n > 0 {
+			m.Conn.Write(buf[:n])
+		}
+	}
+
 }
