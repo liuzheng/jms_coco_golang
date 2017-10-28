@@ -100,9 +100,19 @@ func (m *Menu) Manager() {
 				if "xit" == command[1:] {
 					return
 				}
+				continue
 			case "V":
-				if "sion" == command[1:] {
+				if "ersion" == command[1:] {
 					fmt.Fprint(m.Conn, "version is \r\n")
+				}
+				continue
+			case "S":
+				if "et DEBUG" == command[1:] {
+					log.Logs("", "DEBUG", "INFO")
+					log.Info("Menu Manager", "the log level is switch to DEBUG")
+				} else if "et INFO" == command[1:] {
+					log.Info("Menu Manager", "the log level is switch to INFO")
+					log.Logs("", "INFO", "INFO")
 				}
 			default:
 			// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
@@ -183,7 +193,7 @@ func (m *Menu) printMachines(Machines []api.Machine) {
 }
 
 func (m *Menu) connectMachine(host api.Machine, userId int) {
-	buf := make([]byte, 10240)
+	buf := make([]byte, 1024)
 
 	// TODO: move this modes set to some where
 	modes := ssh.TerminalModes{
@@ -219,8 +229,7 @@ func (m *Menu) connectMachine(host api.Machine, userId int) {
 	for {
 		n, err := soout.Read(buf)
 		if err == io.EOF {
-			log.Info("ServerInit", "websocket is disconnected")
-			break
+			return
 		}
 		if n > 0 {
 			m.Conn.Write(buf[:n])
