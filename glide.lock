@@ -31,7 +31,7 @@ imports:
   version: 86703d0d0f95a393137e71e94606c2a8c04e8c4f
 - name: github.com/jpillora/sizestr
   version: e2ea2fa42fb952f895ab2029f26d3a73b0d56eb3
-- name: github.com/liuzheng712/golog
+- name: github.com/liuzheng/golog
   version: e3a6ba0392cdc06ffd1cd86f0d8eebe6465a2a59
 - name: github.com/op/go-logging
   version: 970db520ece77730c7e4724c61121037378659d9

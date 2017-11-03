@@ -1,7 +1,7 @@
 package: coco
 import:
 - package: github.com/googollee/go-socket.io
-- package: github.com/liuzheng712/golog
+- package: github.com/liuzheng/golog
 - package: golang.org/x/crypto
   subpackages:
   - ssh

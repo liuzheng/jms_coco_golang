@@ -1,7 +1,7 @@
 package log
 
 import (
-	"github.com/liuzheng712/golog"
+	"github.com/liuzheng/golog"
 	"strings"
 	"reflect"
 	"coco/util/errors"
