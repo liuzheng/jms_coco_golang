@@ -242,5 +242,8 @@ func New() (server *socketio.Server) {
 func Run() {
 	server := New()
 	http.Handle("/socket.io/", server)
+
+	http.Handle("/rdp/", http.StripPrefix("/rdp/", http.FileServer(http.Dir("rdp"))))
+	http.Handle("/rdp/socket.io/", client.RdpWebSocket())
 	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", *util.Ip, *util.WsPort), nil))
 }
