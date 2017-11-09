@@ -64,11 +64,11 @@ func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
 
 func New() (server *socketio.Server) {
 	server, err := socketio.NewServer(nil)
-	if log.HandleErr("ServerInit", err, "初始化错误") {
+	if log.HandleErr("websocket", err, "初始化错误") {
 		return
 	}
 	server.On("connection", func(so socketio.Socket) {
-		log.Info("ServerInit", "on connection")
+		log.Info("websocket", "on connection")
 
 		as := api.New()
 		var session *client.Session
@@ -84,7 +84,7 @@ func New() (server *socketio.Server) {
 		buf := make([]byte, 10240)
 
 		so.On("data", func(msg string) {
-			log.Debug("ServerInit", "reselve %v", msg)
+			log.Debug("websocket", "reselve %v", msg)
 			soin.Write([]byte(msg))
 		})
 		so.On("login", func(username string) {
@@ -99,47 +99,47 @@ func New() (server *socketio.Server) {
 			//}
 			t.Machines, _ = as.GetList("", 0) //TODO： 这里的方法有点问题
 			if err != nil {
-				log.Error("ServerInit", "%v", err)
+				log.Error("websocket", "%v", err)
 			}
 			// TODO: so.Emit the machine list
 		})
 		so.On("machine", func(machineID string) {
-			log.Debug("ServerInit", "try to login into %v", machineID)
+			log.Debug("websocket", "try to login into %v", machineID)
 
 			remote, err := t.GetMachine(machineID)
 			if err != nil {
-				log.Error("ServerInit", "%v", err)
+				log.Error("websocket", "%v", err)
 				so.Emit("data", err.Error())
 				so.Emit("disconnect")
 				return
 			}
 			credit, err := as.GetLoginCredit(remote.Sid, remote.Users[0].Uid) //TODO： 这里的方法有点问题
-			if log.HandleErr("ServerInit", err, "GetLoginCredit err") {
+			if log.HandleErr("websocket", err, "GetLoginCredit err") {
 				return
 			}
 
 			connect, err := client.New(remote, credit)
-			if log.HandleErr("Socket", err) {
+			if log.HandleErr("websocket", err) {
 				return
 			}
 			defer connect.Close()
 
 			session, err = connect.NewSession()
-			if log.HandleErr("Socket", err) {
+			if log.HandleErr("websocket", err) {
 				return
 			}
 			defer session.Close()
 
 			soin, err = session.Session.StdinPipe()
-			log.HandleErr("ServerInit", err)
+			log.HandleErr("websocket", err)
 			soout, err = session.Session.StdoutPipe()
-			log.HandleErr("ServerInit", err)
+			log.HandleErr("websocket", err)
 
 			if err := session.Session.RequestPty("xterm", 24, 80, modes); log.HandleErr("ServerInit", err, "1request for pseudo terminal failed") {
 				return
 			}
 			err = session.Session.Shell()
-			if log.HandleErr("ServerInit", err, "执行Shell出错") {
+			if log.HandleErr("websocket", err, "执行Shell出错") {
 				return
 			}
 			//err = session.Wait()
@@ -153,7 +153,7 @@ func New() (server *socketio.Server) {
 					n, err := soout.Read(buf)
 					if err == io.EOF {
 						so.Emit("disconnect")
-						log.Info("ServerInit", "websocket is disconnected")
+						log.Info("websocket", "websocket is disconnected")
 						break
 					}
 					if n > 0 {
@@ -172,14 +172,14 @@ func New() (server *socketio.Server) {
 
 		})
 		so.On("resize", func(size []int) {
-			log.Debug("ServerInit", "resize to: %v", size)
+			log.Debug("websocket", "resize to: %v", size)
 			if err := session.Resize(size[1], size[0]); log.HandleErr("ServerInit", err, "request for pseudo terminal failed") {
 				return
 			}
 			//so.Emit("data", buffString())
 		})
 		so.On("disconnect", func() {
-			log.Debug("ServerInit", "on disconnect")
+			log.Debug("websocket", "on disconnect")
 			so.Emit("disconnect")
 		})
 		//so.On("key", func(key string) {
@@ -234,14 +234,13 @@ func New() (server *socketio.Server) {
 
 	})
 	server.On("error", func(so socketio.Socket, err error) {
-		log.HandleErr("ServerInit", err)
+		log.HandleErr("websocket", err)
 	})
 	return server
 }
 
 func Run() {
-	server := New()
-	http.Handle("/socket.io/", server)
+	http.Handle("/socket.io/", New())
 	http.HandleFunc("/rdp/", client.Rdp)
 	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", "0.0.0.0", *util.WsPort), nil))
 }
