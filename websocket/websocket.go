@@ -88,6 +88,7 @@ func New() (server *socketio.Server) {
 			soin.Write([]byte(msg))
 		})
 		so.On("login", func(username string) {
+			log.Debug("login", username)
 			t.Key, _ = as.GetUserPubKey(username)
 			//log.HandleErr("sshd New", err)
 			//if err != nil {
@@ -242,5 +243,8 @@ func New() (server *socketio.Server) {
 func Run() {
 	http.Handle("/socket.io/", New())
 	http.HandleFunc("/rdp/", client.Rdp)
+	http.HandleFunc("/api/nav", Nav)
+	http.HandleFunc("/api/checklogin", Checklogin)
+	http.HandleFunc("/api/hostlist", HostGroups)
 	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", "0.0.0.0", *util.WsPort), nil))
 }
