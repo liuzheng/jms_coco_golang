@@ -28,7 +28,7 @@ func Rdp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		r.Form.Get("token")
 		res := hostinfo{
-			Ip:       "127.0.0.1",
+			Ip:       "114.215.222.107",
 			Port:     3389,
 			Username: "liuzheng",
 			Password: "liuzheng",

@@ -67,12 +67,12 @@ func (m *Menu) Manager() {
 			case "G":
 				// 输入 G/g 显示您有权限的主机组.
 				m.GetHostGroups()
-			//case "E":
-			////  输入 E/e 批量执行命令.(未完成)
-			//case "U":
-			////  输入 U/u 批量上传文件.(未完成)
-			//case "D":
-			////  输入 D/d 批量下载文件.(未完成)
+				//case "E":
+				////  输入 E/e 批量执行命令.(未完成)
+				//case "U":
+				////  输入 U/u 批量上传文件.(未完成)
+				//case "D":
+				////  输入 D/d 批量下载文件.(未完成)
 			case "H":
 				//  输入 H/h 帮助.
 				m.GetHelp()
@@ -115,7 +115,7 @@ func (m *Menu) Manager() {
 					log.Logs("", "INFO", "INFO")
 				}
 			default:
-			// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
+				// 输入 ID 直接登录 或 输入部分 IP,主机名,备注 进行搜索登录(如果唯一).
 			}
 		}
 	}
@@ -177,17 +177,19 @@ func (m *Menu) printMachines(Machines []api.Machine) {
 	format := "[%-4d]\t%-16s\t%-5d\t%s\t%-14s\t%s\r\n"
 	fmt.Fprintf(m.Conn, "[%-4s]\t%-16s\t%-5s\t%s\t%-14s\t%s\r\n", "ID", "IP", "Port", "Hostname", "Username", "Comment")
 	for _, v := range Machines {
+		users := []string{}
 		for _, u := range v.Users {
-			fmt.Fprintf(m.Conn, format, v.Sid, v.Ip, v.Port, v.Name, u.Username, v.Remark)
-			//remotes = append(remotes, api.Machine{
-			//	Ip:     v.Ip,
-			//	Port:   v.Port,
-			//	Name:   v.Name,
-			//	Sid:    v.Sid,
-			//	Remark: v.Remark,
-			//	Users:  []api.MachineUser{u},
-			//})
+			users = append(users, u.Username)
 		}
+		fmt.Fprintf(m.Conn, format, v.Sid, v.Ip, v.Port, v.Name, strings.Join(users, ","), v.Remark)
+		//remotes = append(remotes, api.Machine{
+		//	Ip:     v.Ip,
+		//	Port:   v.Port,
+		//	Name:   v.Name,
+		//	Sid:    v.Sid,
+		//	Remark: v.Remark,
+		//	Users:  []api.MachineUser{u},
+		//})
 	}
 	return
 }

@@ -62,15 +62,16 @@ func (t *TTY) GetMachine(machineID string) (machine api.Machine, err error) {
 //	return
 //}
 
-func New() (server *socketio.Server) {
+func New() (server *socketio.Server, as *api.Server) {
+	as = api.New()
 	server, err := socketio.NewServer(nil)
 	if log.HandleErr("websocket", err, "初始化错误") {
 		return
 	}
+
 	server.On("connection", func(so socketio.Socket) {
 		log.Info("websocket", "on connection")
 
-		as := api.New()
 		var session *client.Session
 		var soin io.WriteCloser
 		var soout io.Reader
@@ -237,14 +238,16 @@ func New() (server *socketio.Server) {
 	server.On("error", func(so socketio.Socket, err error) {
 		log.HandleErr("websocket", err)
 	})
-	return server
+	return server, as
 }
 
 func Run() {
-	http.Handle("/socket.io/", New())
+	websocket, as := New()
+	http.Handle("/socket.io/", websocket)
+	H := HttpAPI{API: as}
 	http.HandleFunc("/rdp/", client.Rdp)
-	http.HandleFunc("/api/nav", Nav)
-	http.HandleFunc("/api/checklogin", Checklogin)
-	http.HandleFunc("/api/hostlist", HostGroups)
+	http.HandleFunc("/api/nav", H.Nav)
+	http.HandleFunc("/api/checklogin", H.Checklogin)
+	http.HandleFunc("/api/hostlist", H.HostGroups)
 	log.Fatal("WS Run", "%v", http.ListenAndServe(fmt.Sprintf("%s:%d", "0.0.0.0", *util.WsPort), nil))
 }

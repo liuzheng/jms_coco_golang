@@ -58,7 +58,7 @@ func (s *Server) HandleConn(c net.Conn) {
 	if sshConn.Permissions == nil || sshConn.Permissions.Extensions == nil {
 		return
 	}
-	log.Debug("HandleConn", "%v", sshConn.Permissions)
+	//log.Debug("HandleConn", "%v", sshConn.Permissions)
 
 	ext := sshConn.Permissions.Extensions
 	pk := &publicKey{
@@ -215,7 +215,7 @@ func Run() {
 	server := New()
 
 	// Set up listener
-	l, err := net.Listen("tcp", fmt.Sprintf("%v:%v", *util.Ip, *util.SshPort))
+	l, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%v", *util.SshPort))
 	if err != nil {
 		panic(err)
 	}

@@ -5,8 +5,12 @@ import (
 	"io"
 	"encoding/json"
 	"fmt"
+	"coco/api"
 )
 
+type HttpAPI struct {
+	API *api.Server
+}
 type navlist struct {
 	Id       string     `json:"id"`
 	Name     string     `json:"name"`
@@ -22,19 +26,18 @@ type navChild struct {
 
 type HostGroup struct {
 	Name     string `json:"name"`
-	Id       string `json:"id"`
+	Id       int    `json:"id"`
 	Children []Host `json:"children"`
 }
 
 type Host struct {
-	Name    string `json:"name"`
-	Uuid    string `json:"uuid"`
-	Type    string `json:"type"`
-	Token   string `json:"token"`
-	Machine string `json:"machine"`
+	Name    string   `json:"name"`
+	Uuid    string   `json:"uuid"`
+	Type    string   `json:"type"`
+	Users   []string `json:"users"`
 }
 
-func Nav(w http.ResponseWriter, r *http.Request) {
+func (h *HttpAPI) Nav(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		res := []navlist{
 			{Id: "File",
@@ -150,37 +153,39 @@ func Nav(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Checklogin(w http.ResponseWriter, r *http.Request) {
+func (h *HttpAPI) Checklogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		io.WriteString(w, `{"logined":true}`)
 	} else if r.Method == "POST" {
 		fmt.Println(r)
 	}
 }
-func HostGroups(w http.ResponseWriter, r *http.Request) {
+func (h *HttpAPI) HostGroups(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		res := []HostGroup{
-			{
-				Name: "ops",
-				Id:   "ccc",
-				Children: []Host{
-					{
-						Name:  "ops-linux",
-						Uuid:  "xxxx",
-						Type:  "ssh",
-						Token: "sshxxx",
-					},
-					{
-						Name:    "ops-win",
-						Uuid:    "win-aasdf",
-						Type:    "rdp",
-						Token:   "rdpxxx",
-						Machine: "sss",
-					},
-				},
-			},
+		MachineGroup, _ := h.API.GetGroupList()
+		HG := []HostGroup{}
+		for _, MG := range MachineGroup {
+			Machines, _ := h.API.GetList("", MG.Gid)
+			H := []Host{}
+			for _, M := range Machines {
+				users := []string{}
+				for _, u := range M.Users {
+					users = append(users, u.Username)
+				}
+				H = append(H, Host{
+					Name:    M.Name,
+					Uuid:    M.Uuid,
+					Type:    M.Type,
+					Users:   users,
+				})
+			}
+			HG = append(HG, HostGroup{
+				Name:     MG.Name,
+				Id:       MG.Gid,
+				Children: H,
+			})
 		}
-		rb, _ := json.Marshal(res)
+		rb, _ := json.Marshal(HG)
 		io.WriteString(w, string(rb))
 	}
 }

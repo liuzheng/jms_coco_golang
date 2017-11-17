@@ -47,6 +47,8 @@ type Machine struct {
 	Port   int
 	Remark string
 	Users  []MachineUser
+	Type   string
+	Uuid   string
 }
 
 //服务器组列表
