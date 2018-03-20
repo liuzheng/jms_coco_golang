@@ -6,3 +6,4 @@ import:
   subpackages:
   - ssh
   - ssh/terminal
+- package: github.com/zhouhui8915/go-socket.io-client
